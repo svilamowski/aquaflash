@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  backend:
+    build: .
+    container_name: aquaflash_backend
+    ports:
+      - "3000:3000"
+    volumes:
+      # Sincroniza el código local con el contenedor
+      - .:/app
+      # Evita sobreescribir los modulos de node del contenedor
+      - /app/node_modules
+    env_file:
+      - .env
+    # Sobreescribe el comando por defecto para usar el modo watch (hot-reload)
+    command: npm run dev
