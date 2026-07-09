@@ -1,0 +1,99 @@
+/* 1. Reset básico para quitar márgenes predeterminados */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f4f4;
+}
+
+/* 2. Contenedor principal de la barra de navegación */
+nav {
+    background-color: #0d6efd;
+    /* Color azul brillante de la foto */
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+}
+
+/* 3. Estilo del Logo y texto AquaFlash pegado */
+nav div {
+    display: flex;
+    align-items: center;
+}
+
+/* Estilo para el primer enlace (AquaFlash) dentro de la lista */
+/* Controla el tamaño de la imagen del logo */
+.imagen-logo img {
+    display: block;
+    padding: 12px;
+}
+
+/* 3. Estilo del Logo y texto AquaFlash alineados */
+.logo {
+    display: flex;
+    align-items: center;
+    /* Espacio horizontal exacto entre la gota y la palabra AquaFlash */
+}
+
+/* Quitamos cualquier subrayado del enlace que envuelve a la imagen */
+.imagen-logo {
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+}
+
+/* Controla el tamaño real de la imagen en pantalla */
+.imagen-logo img {
+    height: 70px;
+    /* Tamaño ideal para que resalte sin romper el nav de 70px */
+    margin: 0;
+    width: auto;
+    display: block;
+}
+
+/* Estilo limpio para el texto "AquaFlash" */
+.texto-logo {
+    color: #ffffff;
+    text-decoration: none;
+    /* Borra por completo la línea inferior morada/azul */
+    font-size: 20px;
+    /* Un poco más grande para acompañar la imagen */
+    font-weight: bold;
+    letter-spacing: 0.5px;
+    display: inline-block;
+}
+
+/* 4. Contenedor de la lista de enlaces */
+nav ul {
+    display: flex;
+    align-items: center;
+    list-style: none;
+    gap: 30px;
+    /* Espaciado uniforme entre pestañas */
+}
+
+/* Estilo general para todos los enlaces */
+nav ul li a {
+    color: #ffffff;
+    text-decoration: none;
+    font-size: 16px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    /* Espacio entre el emoji/icono y el texto */
+    padding: 8px 16px;
+    border-radius: 8px;
+    transition: background 0.2s ease;
+}
+
+/* Efecto hover suave al pasar el mouse */
+nav ul li a:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+}
