@@ -21,11 +21,58 @@ export const updateStockCantidad = async (productoId, nuevaCantidad) => {
     return data;
 };
 
-export const createDescartado = async (descarteData) => {
-    // INSERT INTO descartados (producto_id, cantidad, fecha) 
-    // VALUES ($1, $2, CURRENT_TIMESTAMP) 
-    // RETURNING *;
-    const { data, error } = await pool.from('descartados').insert([descarteData]).select();
-    if (error) throw new Error('Error al registrar descarte: ' + error.message);
+export const createStockFabrica = async (productoId, cantidad) => {
+    const { data, error } = await pool
+        .from('stock_fabrica')
+        .insert([{ producto_id: productoId, cantidad }])
+        .select()
+        .single();
+
+    if (error) throw new Error('Error al crear stock de fábrica: ' + error.message);
     return data;
 };
+
+export const ajustarStockPorVenta = async (productoId, cantidadEntregada, cantidadRetirada) => {
+    const entregada = cantidadEntregada ?? 0;
+    const retirada = cantidadRetirada ?? 0;
+
+    const { data: stock, error: selectError } = await pool
+        .from('stock_fabrica')
+        .select('cantidad')
+        .eq('producto_id', productoId)
+        .single();
+
+    if (selectError) throw new Error('Error al obtener stock: ' + selectError.message);
+
+    const nuevaCantidad = stock.cantidad - entregada + retirada;
+    if (nuevaCantidad < 0) {
+        throw new Error('No hay stock suficiente en fábrica para realizar la entrega');
+    }
+
+    return updateStockCantidad(productoId, nuevaCantidad);
+};
+
+export const descartarStock = async (productoId, cantidadADescartar) => {
+    const { data: stock, error: selectError } = await pool
+        .from('stock_fabrica')
+        .select('cantidad')
+        .eq('producto_id', productoId)
+        .single();
+
+    if (selectError) throw new Error('Error al obtener stock: ' + selectError.message);
+
+    const nuevaCantidad = stock.cantidad - cantidadADescartar;
+    if (nuevaCantidad < 0) {
+        throw new Error('No hay stock suficiente para descartar esa cantidad');
+    }
+
+    return updateStockCantidad(productoId, nuevaCantidad);
+};
+
+export default class StockRepository {
+    getStockFabrica = getStockFabrica;
+    updateStockCantidad = updateStockCantidad;
+    createStockFabrica = createStockFabrica;
+    ajustarStockPorVenta = ajustarStockPorVenta;
+    descartarStock = descartarStock;
+}

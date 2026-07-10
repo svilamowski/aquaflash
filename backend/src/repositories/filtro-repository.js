@@ -23,13 +23,16 @@ export const getAllFiltros = async () => {
     return data;
 };
 
-export const createFiltro = async (nombreFiltro) => {
+export const createFiltro = async (filtroData) => {
     // INSERT INTO filtros_personalizados (nombre)
     // VALUES ($1)
     // RETURNING *;
+    const payload = { nombre: filtroData.nombre };
+    if (filtroData.id) payload.id = filtroData.id;
+
     const { data, error } = await pool
         .from('filtros_personalizados')
-        .insert([{ nombre: nombreFiltro }])
+        .insert([payload])
         .select();
         
     if (error) throw new Error('Error al crear filtro: ' + error.message);
@@ -60,3 +63,11 @@ export const deleteFiltroDeCliente = async (clienteId, filtroId) => {
     if (error) throw new Error('Error al remover el filtro: ' + error.message);
     return true;
 };
+
+export default class FiltroRepository {
+    getClientesByFiltro = getClientesByFiltro;
+    getAllFiltros = getAllFiltros;
+    createFiltro = createFiltro;
+    createFiltroACliente = createFiltroACliente;
+    deleteFiltroDeCliente = deleteFiltroDeCliente;
+}

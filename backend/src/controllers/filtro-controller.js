@@ -18,10 +18,9 @@ router.get('/', async (req, res) => {
 // Crear un nuevo filtro
 router.post('/create', async (req, res) => {
     try {
-        // Extraemos el nombreFiltro del cuerpo de la petición
-        const { nombreFiltro } = req.body; 
-        
-        returnArray = await svc.createFiltro(nombreFiltro);
+        const entity = req.body;
+
+        returnArray = await svc.createFiltro(entity);
         res.status(201).send(returnArray); // 201 Created
     } catch (error) {
         // Si el servicio tira el error de "nombre vacío", cae aquí con un 400 Bad Request

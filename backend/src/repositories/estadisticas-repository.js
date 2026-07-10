@@ -66,3 +66,9 @@ export const getEstadoDeudasYPromos = async (repartidorId = null) => {
     if (error) throw new Error('Error al obtener estado de clientes: ' + error.message);
     return data;
 };
+
+export default class EstadisticasRepository {
+    getVentasFiltradas = getVentasFiltradas;
+    getClientesNuevosFiltrados = getClientesNuevosFiltrados;
+    getEstadoDeudasYPromos = getEstadoDeudasYPromos;
+}

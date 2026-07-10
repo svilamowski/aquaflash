@@ -14,11 +14,24 @@ export const updateNotificacionLeida = async (id) => {
     return data;
 };
 
-export const createNotificacion = async (mensaje) => {
-    // INSERT INTO notificaciones (mensaje, leido)
-    // VALUES ($1, false)
+export const createNotificacion = async (notificacionData) => {
+    // INSERT INTO notificaciones (mensaje, leido, fecha)
+    // VALUES ($1, $2, $3)
     // RETURNING *;
-    const { data, error } = await pool.from('notificaciones').insert([{ mensaje, leido: false }]).select();
+    const payload = {
+        mensaje: notificacionData.mensaje,
+        leido: notificacionData.leido ?? false,
+        fecha: notificacionData.fecha ?? new Date().toISOString(),
+    };
+    if (notificacionData.id) payload.id = notificacionData.id;
+
+    const { data, error } = await pool.from('notificaciones').insert([payload]).select();
     if (error) throw new Error('Error al crear notificación: ' + error.message);
     return data;
 };
+
+export default class NotificacionRepository {
+    getNotificacionesNoLeidas = getNotificacionesNoLeidas;
+    updateNotificacionLeida = updateNotificacionLeida;
+    createNotificacion = createNotificacion;
+}

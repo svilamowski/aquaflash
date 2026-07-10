@@ -1,8 +1,10 @@
 import ProductoRepository from '../repositories/producto-repository.js';
+import StockRepository from '../repositories/stock-repository.js';
 
 export default class ProductoService {
     constructor() {
         this.productoRepo = new ProductoRepository();
+        this.stockRepo = new StockRepository();
     }
 
     getAllProductos = async () => {
@@ -22,8 +24,11 @@ export default class ProductoService {
         if (!productoData || !productoData.nombre) {
             throw new Error('Faltan datos obligatorios para crear el producto (ej. nombre)');
         }
-        const returnData = await this.productoRepo.createProducto(productoData);
-        return returnData;
+
+        const cantidad = productoData.cantidad ?? 0;
+        const producto = await this.productoRepo.createProducto({ ...productoData, cantidad });
+        await this.stockRepo.createStockFabrica(producto.id, cantidad);
+        return producto;
     }
 
     deleteProducto = async (id) => {

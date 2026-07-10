@@ -20,6 +20,17 @@ export const createVentasProductos = async (ventasArray) => {
     return data;
 };
 
+export const getVisitasByCliente = async (clienteId) => {
+    const { data, error } = await pool
+        .from('visitas')
+        .select('*, ventas_productos(cantidad_entregada, cantidad_retirada, precio_total_producto, productos(nombre))')
+        .eq('cliente_id', clienteId)
+        .order('fecha', { ascending: false });
+
+    if (error) throw new Error('Error al obtener historial de visitas: ' + error.message);
+    return data;
+};
+
 export const getVisitasDeHoyByRepartidor = async (repartidorId) => {
     // SELECT * FROM visitas WHERE repartidor_id = $1 AND fecha = HOY
     const hoy = new Date().toISOString().split('T')[0];
@@ -34,3 +45,10 @@ export const getVisitasDeHoyByRepartidor = async (repartidorId) => {
     if (error) throw new Error('Error al obtener visitas de hoy: ' + error.message);
     return data;
 };
+
+export default class VisitaRepository {
+    createVisita = createVisita;
+    createVentasProductos = createVentasProductos;
+    getVisitasByCliente = getVisitasByCliente;
+    getVisitasDeHoyByRepartidor = getVisitasDeHoyByRepartidor;
+}
