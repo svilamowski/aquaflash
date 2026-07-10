@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { supabase } from './pool.js';
+import { supabase } from './src/database/pool.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -31,6 +31,6 @@ app.get('/test-db', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
+app.listen(PORT, '0.0.0.0', () => {
     console.log(`Servidor de AquaFlash corriendo en http://localhost:${PORT}`);
 });
