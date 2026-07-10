@@ -33,3 +33,10 @@ export const deleteRepartidor = async (id) => {
     if (error) throw new Error('Error al eliminar repartidor: ' + error.message);
     return true;
 };
+
+export default class RepartidorRepository {
+    getAllRepartidores = getAllRepartidores;
+    getRepartidorById = getRepartidorById;
+    createRepartidor = createRepartidor;
+    deleteRepartidor = deleteRepartidor;
+}

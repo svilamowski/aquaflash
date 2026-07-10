@@ -17,13 +17,16 @@ export default class FiltroService {
         return returnArray;
     }
 
-    createFiltro = async (nombreFiltro) => {
-        if (!nombreFiltro || nombreFiltro.trim() === '') {
+    createFiltro = async (entity) => {
+        const nombre = entity.nombre ?? entity.nombreFiltro;
+        if (!nombre || nombre.trim() === '') {
             throw new Error('El nombre del filtro no puede estar vacío');
         }
-        
-        // Usamos .trim() por si el frontend manda espacios en blanco por error
-        const returnData = await this.filtroRepo.createFiltro(nombreFiltro.trim());
+
+        const returnData = await this.filtroRepo.createFiltro({
+            id: entity.id,
+            nombre: nombre.trim(),
+        });
         return returnData;
     }
 

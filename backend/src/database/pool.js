@@ -17,10 +17,12 @@ if (supabaseKey) {
     supabaseKey = supabaseKey.trim().replace(/['"]/g, '');
 }
 
-console.log("🔍 URL SANEADA:", supabaseUrl);
 
 if (!supabaseUrl || !supabaseKey) {
     throw new Error('Faltan las credenciales de Supabase en el archivo .env');
 }
 
-export const supabase = createClient(supabaseUrl, supabaseKey);
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+export { supabase };
+export default supabase;

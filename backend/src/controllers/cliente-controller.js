@@ -30,28 +30,28 @@ router.get('/promocion', async (req, res) => {
 });
 
 // Búsqueda por nombre
-router.get('/:nombre', async (req, res) => { 
+router.get('/nombre/:nombre', async (req, res) => { 
     const nombre = req.params.nombre;
     returnArray = await svc.getClientesByNombre(nombre);
     res.status(200).send(returnArray);   
 });
 
 // Búsqueda por dirección
-router.get('/:direccion', async (req, res) => { 
+router.get('/direccion/:direccion', async (req, res) => { 
     const direccion = req.params.direccion;
     returnArray = await svc.getClientesByDireccion(direccion);
     res.status(200).send(returnArray);   
 });
 
 // Búsqueda por frecuencia
-router.get('/:frecuencia', async (req, res) => { 
+router.get('/frecuencia/:frecuencia', async (req, res) => { 
     const frecuencia = req.params.frecuencia;
     returnArray = await svc.getClientesByFrecuencia(frecuencia);
     res.status(200).send(returnArray);   
 });
 
 // Búsqueda por repartidor
-router.get('/:repartidorId', async (req, res) => { 
+router.get('/repartidor/:repartidorId', async (req, res) => { 
     const repartidorId = parseInt(req.params.repartidorId);
     returnArray = await svc.getClientesByRepartidor(repartidorId);
     res.status(200).send(returnArray);   

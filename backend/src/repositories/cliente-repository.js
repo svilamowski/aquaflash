@@ -100,13 +100,28 @@ export const getNotaInterna = async (clienteId) => {
 };
 
 export const alterNotaInterna = async (clienteId, clienteNota) => {
-    // UPADATE notas_internas SET nota = '${entity.nota}'
-    // WHERE cliente_id = '${entity.cliente_id}'
-    const { data, error } = await pool.from('notas_internas').upsert({ 
-        cliente_id: clienteId, 
-        nota: clienteNota 
-    }, { onConflict: 'cliente_id' }).select();
-    
+    const { data: existing, error: selectError } = await pool
+        .from('notas_internas')
+        .select('id')
+        .eq('cliente_id', clienteId)
+        .maybeSingle();
+
+    if (selectError) throw new Error('Error al modificar nota: ' + selectError.message);
+
+    if (existing) {
+        const { data, error } = await pool
+            .from('notas_internas')
+            .update({ nota: clienteNota })
+            .eq('cliente_id', clienteId)
+            .select();
+        if (error) throw new Error('Error al modificar nota: ' + error.message);
+        return data;
+    }
+
+    const { data, error } = await pool
+        .from('notas_internas')
+        .insert({ cliente_id: clienteId, nota: clienteNota })
+        .select();
     if (error) throw new Error('Error al modificar nota: ' + error.message);
     return data;
 };
@@ -183,4 +198,22 @@ export const deleteCliente = async (clienteId) => {
     const { error } = await pool.from('clientes').delete().eq('id', clienteId);
     if (error) throw new Error('Error al eliminar cliente: ' + error.message);
     return true;
+}
+
+export default class ClienteRepository {
+    getAllClientes = getAllClientes;
+    getStockEnCasa = getStockEnCasa;
+    getClienteById = getClienteById;
+    getClientesByNombre = getClientesByNombre;
+    getClientesByDireccion = getClientesByDireccion;
+    getClientesByFrecuencia = getClientesByFrecuencia;
+    getClientesByRepartidor = getClientesByRepartidor;
+    getClientesByDeuda = getClientesByDeuda;
+    getClientesByUltimaCompra = getClientesByUltimaCompra;
+    getClientesEnPromocion = getClientesEnPromocion;
+    getNotaInterna = getNotaInterna;
+    alterNotaInterna = alterNotaInterna;
+    alterCliente = alterCliente;
+    createCliente = createCliente;
+    deleteCliente = deleteCliente;
 }

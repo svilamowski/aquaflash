@@ -85,7 +85,7 @@ export default class ClienteService {
 
     alterNotaInterna = async (entity) => {
         if (!entity.cliente_id) throw new Error('Falta el ID del cliente para la nota');
-        const returnData = await this.clienteRepo.alterNotaInterna(entity);
+        const returnData = await this.clienteRepo.alterNotaInterna(entity.cliente_id, entity.nota);
         return returnData;
     }
 }

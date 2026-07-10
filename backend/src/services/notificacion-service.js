@@ -18,11 +18,20 @@ export default class NotificacionService {
         return returnData;
     }
 
-    createNotificacion = async (mensaje) => {
-        if (!mensaje || mensaje.trim() === '') {
+    createNotificacion = async (entity) => {
+        if (!entity.mensaje || entity.mensaje.trim() === '') {
             throw new Error('El mensaje de la notificación no puede estar vacío');
         }
-        const returnData = await this.notificacionRepo.createNotificacion(mensaje.trim());
+
+        const fecha = entity.fecha ? new Date(entity.fecha) : new Date();
+        const fechaValida = isNaN(fecha.getTime()) ? new Date() : fecha;
+
+        const returnData = await this.notificacionRepo.createNotificacion({
+            id: entity.id,
+            mensaje: entity.mensaje.trim(),
+            leido: entity.leido ?? false,
+            fecha: fechaValida.toISOString(),
+        });
         return returnData;
     }
 }

@@ -19,10 +19,8 @@ router.get('/fabrica', async (req, res) => {
 router.put('/fabrica/:productoId/cantidad', async (req, res) => {
     try {
         const productoId = parseInt(req.params.productoId);
-        // Extraemos 'nuevaCantidad' del cuerpo de la petición
-        const { nuevaCantidad } = req.body; 
-        
-        returnData = await svc.updateStockCantidad(productoId, nuevaCantidad);
+
+        returnData = await svc.updateStockCantidad(productoId, req.body);
         res.status(200).send(returnData);
     } catch (error) {
         // Captura errores como enviar una nuevaCantidad nula o un productoId inválido
@@ -30,14 +28,11 @@ router.put('/fabrica/:productoId/cantidad', async (req, res) => {
     }
 });
 
-// Registrar un producto descartado
-router.post('/descarte', async (req, res) => {
+// Descartar stock de un producto (resta la cantidad indicada)
+router.put('/fabrica/descarte', async (req, res) => {
     try {
-        // Obtenemos todo el objeto del descarte (esperando producto_id y cantidad)
-        const descarteData = req.body;
-        
-        returnData = await svc.createDescartado(descarteData);
-        res.status(201).send(returnData); // 201 Created
+        returnData = await svc.descartarStock(req.body);
+        res.status(200).send(returnData);
     } catch (error) {
         res.status(400).json({ message: 'Error al registrar el descarte', error: error.message });
     }

@@ -18,10 +18,15 @@ router.get('/no-leidas', async (req, res) => {
 // Crear una nueva notificación
 router.post('/create', async (req, res) => {
     try {
-        // Extraemos el mensaje desde el cuerpo de la petición (req.body)
-        const { mensaje } = req.body;
-        
-        const returnData = await svc.createNotificacion(mensaje);
+        const entity = req.body;
+        if (!entity) {
+            return res.status(400).json({
+                message: 'Error al crear la notificación',
+                error: 'El cuerpo de la petición es requerido (usá Content-Type: application/json)',
+            });
+        }
+
+        const returnData = await svc.createNotificacion(entity);
         res.status(201).send(returnData); // 201 Created
     } catch (error) {
         // Si el mensaje viene vacío, el servicio lanzará un error capturado aquí (400 Bad Request)

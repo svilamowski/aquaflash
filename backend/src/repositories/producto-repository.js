@@ -14,6 +14,12 @@ export const getProductoById = async (id) => {
     return data;
 };
 
+export const getProductoByNombre = async (nombre) => {
+    const { data, error } = await pool.from('productos').select('*').eq('nombre', nombre).maybeSingle();
+    if (error) throw new Error('Error al buscar el producto: ' + error.message);
+    return data;
+};
+
 export const createProducto = async (productoData) => {
     // INSERT INTO productos (nombre, cantidad_minima_fabrica, cantidad, precio) VALUES (...) RETURNING *;
     const { data, error } = await pool
@@ -32,3 +38,11 @@ export const deleteProducto = async (id) => {
     if (error) throw new Error('Error al eliminar producto: ' + error.message);
     return true;
 };
+
+export default class ProductoRepository {
+    getAllProductos = getAllProductos;
+    getProductoById = getProductoById;
+    getProductoByNombre = getProductoByNombre;
+    createProducto = createProducto;
+    deleteProducto = deleteProducto;
+}
