@@ -56,7 +56,7 @@ export const getEstadoDeudasYPromos = async (repartidorId = null) => {
     */
     let query = pool
         .from('clientes')
-        .select('deuda, es_promocion, repartidor_id'); 
+        .select('deuda, es_promocion, repartidor_id, activo');
         
     if (repartidorId) {
         query = query.eq('repartidor_id', repartidorId);
@@ -67,8 +67,15 @@ export const getEstadoDeudasYPromos = async (repartidorId = null) => {
     return data;
 };
 
+export const getRepartidores = async () => {
+    const { data, error } = await pool.from('repartidores').select('id, nombre').order('nombre');
+    if (error) throw new Error('Error al obtener repartidores: ' + error.message);
+    return data;
+};
+
 export default class EstadisticasRepository {
     getVentasFiltradas = getVentasFiltradas;
     getClientesNuevosFiltrados = getClientesNuevosFiltrados;
     getEstadoDeudasYPromos = getEstadoDeudasYPromos;
+    getRepartidores = getRepartidores;
 }

@@ -1,13 +1,28 @@
 
 const NAVBAR_HTML = `
 <nav>
+  <div class="nav-inner">
   <div class="logo">
     <a class="imagen-logo" href="../index/index.html" aria-label="Ir a clientes">
       <img src="../../public/logo.png" alt="Logo AquaFlash">
     </a>
     <a class="texto-logo" href="../index/index.html">AquaFlash</a>
   </div>
-  <ul>
+  <div class="nav-utils">
+    <button type="button" class="nav-btn-tema" id="nav-btn-tema" aria-label="Cambiar tema">
+      <span class="nav-btn-tema__sol" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="4"/>
+          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
+        </svg>
+      </span>
+      <span class="nav-btn-tema__luna" aria-hidden="true">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
+      </span>
+    </button>
+    <ul>
     <li>
       <a href="../estadisticas/estadisticas.html" data-nav="estadisticas">
         <span class="nav-icon" aria-hidden="true">
@@ -56,6 +71,8 @@ const NAVBAR_HTML = `
       </a>
     </li>
   </ul>
+  </div>
+  </div>
 </nav>
 `;
 
@@ -124,6 +141,10 @@ function loadNavbar() {
     }
 
     iniciarActualizacionBadge();
+
+    document.getElementById('nav-btn-tema')?.addEventListener('click', () => {
+        window.aquaflashTema?.alternarTema();
+    });
 }
 
 window.actualizarBadgeNavbar = actualizarBadgeNavbar;

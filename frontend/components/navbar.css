@@ -3,21 +3,28 @@
 }
 
 #navbar > nav {
-    background-color: #0d6efd;
+    background-color: var(--navbar-bg);
+    width: 100%;
+    transition: background-color 0.2s ease;
+}
+
+#navbar .nav-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 32px;
     height: 60px;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 40px;
     gap: 20px;
     width: 100%;
-    overflow: hidden;
 }
 
 #navbar .logo {
     display: flex;
     align-items: center;
     flex-shrink: 0;
+    min-width: 0;
 }
 
 #navbar .imagen-logo {
@@ -28,8 +35,8 @@
 
 #navbar .imagen-logo img {
     display: block;
-    padding: 12px;
-    height: 70px;
+    padding: 8px 12px;
+    height: 52px;
     margin: 0;
     width: auto;
 }
@@ -40,6 +47,47 @@
     font-size: 20px;
     font-weight: bold;
     letter-spacing: 0.5px;
+    white-space: nowrap;
+}
+
+#navbar .nav-utils {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    justify-content: flex-end;
+    min-width: 0;
+}
+
+#navbar .nav-btn-tema {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.1);
+    color: #ffffff;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.2s ease;
+}
+
+#navbar .nav-btn-tema:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+#navbar .nav-btn-tema__luna {
+    display: none;
+}
+
+html[data-theme="dark"] #navbar .nav-btn-tema__sol {
+    display: none;
+}
+
+html[data-theme="dark"] #navbar .nav-btn-tema__luna {
+    display: inline-flex;
 }
 
 #navbar ul {
@@ -47,8 +95,6 @@
     align-items: center;
     list-style: none;
     gap: 8px;
-    flex: 1;
-    justify-content: flex-end;
     flex-wrap: nowrap;
     min-width: 0;
 }
@@ -60,12 +106,12 @@
 #navbar ul li a {
     color: #ffffff;
     text-decoration: none;
-    font-size: 16px;
+    font-size: 15px;
     font-weight: 500;
     display: inline-flex;
     align-items: center;
     gap: 8px;
-    padding: 8px 16px;
+    padding: 8px 14px;
     border-radius: 8px;
     transition: background 0.2s ease;
     white-space: nowrap;
@@ -93,7 +139,7 @@
 }
 
 #navbar ul li a.active {
-    background-color: #0a58ca;
+    background-color: var(--navbar-active);
     font-weight: 600;
 }
 
@@ -121,10 +167,17 @@
     font-weight: 700;
     line-height: 18px;
     text-align: center;
-    border: 2px solid #0d6efd;
+    border: 2px solid var(--navbar-bg);
     box-sizing: content-box;
 }
 
 #navbar ul li a.active .nav-badge {
-    border-color: #0a58ca;
+    border-color: var(--navbar-active);
+}
+
+@media (max-width: 900px) {
+    #navbar ul li a {
+        font-size: 14px;
+        padding: 8px 10px;
+    }
 }
