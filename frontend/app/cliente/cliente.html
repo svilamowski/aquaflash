@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AquaFlash - Cliente</title>
+  <link rel="icon" href="../../public/logo2.png">
+  <link rel="stylesheet" href="../../components/base.css">
+  <link rel="stylesheet" href="../../components/navbar.css">
+  <link rel="stylesheet" href="cliente.css">
+</head>
+
+<body>
+  <div id="navbar"></div>
+
+  <main class="page-content cliente-page">
+    <div id="cargando" class="mensaje-estado">Cargando cliente...</div>
+    <div id="error" class="mensaje-estado mensaje-estado--error" hidden></div>
+
+    <div id="contenido" hidden>
+      <div class="cliente-toolbar">
+        <a href="../index/index.html" class="btn-volver">← Volver</a>
+        <div class="cliente-toolbar__acciones">
+          <a id="btn-wapp" class="btn-toolbar btn-toolbar--wapp" target="_blank" rel="noopener">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 11.5a8.4 8.4 0 0 1-1.2 4.3 8.5 8.5 0 0 1-7.3 4.2 8.4 8.4 0 0 1-3.8-.9L3 20l1.9-5.5a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.2-7.3A8.4 8.4 0 0 1 12.5 3 8.5 8.5 0 0 1 21 11.5z"/>
+            </svg>
+            WhatsApp
+          </a>
+          <button type="button" id="btn-editar" class="btn-toolbar btn-toolbar--editar">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+            </svg>
+            Editar
+          </button>
+          <button type="button" id="btn-baja" class="btn-toolbar btn-toolbar--baja">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/>
+            </svg>
+            Dar de Baja
+          </button>
+        </div>
+      </div>
+
+      <section class="cliente-card">
+        <header class="cliente-header">
+          <div class="cliente-header__info">
+            <h1 id="cliente-nombre"></h1>
+            <p class="cliente-contacto">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>
+              </svg>
+              <span id="cliente-direccion"></span>
+            </p>
+            <p class="cliente-contacto">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.5 19.5 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1.9.3 1.8.5 2.6a2 2 0 0 1-.5 2.1L8 9.9a16 16 0 0 0 6 6l1.5-1.1a2 2 0 0 1 2.1-.5c.8.2 1.7.4 2.6.5A2 2 0 0 1 22 16.9z"/>
+              </svg>
+              <span id="cliente-telefono"></span>
+            </p>
+          </div>
+          <div id="cliente-deuda" class="cliente-deuda-card">
+            <span class="cliente-deuda-card__label">Deuda actual</span>
+            <span id="cliente-deuda-monto" class="cliente-deuda-card__monto"></span>
+          </div>
+        </header>
+
+        <section class="metricas">
+          <article class="metrica-card">
+            <div class="metrica-card__icono metrica-card__icono--azul">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>
+              </svg>
+            </div>
+            <div>
+              <span class="metrica-card__label">Frecuencia</span>
+              <span id="cliente-frecuencia" class="metrica-card__valor"></span>
+            </div>
+          </article>
+          <article class="metrica-card">
+            <div class="metrica-card__icono metrica-card__icono--celeste">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2.7l7 3.9v7.8c0 4.4-3.1 8.5-7 9.6-3.9-1.1-7-5.2-7-9.6V6.6l7-3.9z"/>
+              </svg>
+            </div>
+            <div>
+              <span class="metrica-card__label">Dispenser</span>
+              <span id="cliente-dispenser" class="metrica-card__valor"></span>
+            </div>
+          </article>
+          <article class="metrica-card">
+            <div class="metrica-card__icono metrica-card__icono--verde">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <rect x="2" y="5" width="20" height="14" rx="2"/><path d="M2 10h20"/>
+              </svg>
+            </div>
+            <div>
+              <span class="metrica-card__label">Último pago</span>
+              <span id="cliente-pago" class="metrica-card__valor"></span>
+            </div>
+          </article>
+          <article class="metrica-card">
+            <div class="metrica-card__icono metrica-card__icono--naranja">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+              </svg>
+            </div>
+            <div>
+              <span class="metrica-card__label">Última compra</span>
+              <span id="cliente-compra" class="metrica-card__valor"></span>
+            </div>
+          </article>
+        </section>
+      </section>
+
+      <section class="cliente-card cliente-card--tabs">
+        <nav class="tabs" id="tabs">
+          <button type="button" class="tab active" data-tab="historial">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>
+            </svg>
+            Historial
+          </button>
+          <button type="button" class="tab" data-tab="productos">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+            </svg>
+            Productos
+          </button>
+          <button type="button" class="tab" data-tab="notas">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/>
+            </svg>
+            Notas Internas
+          </button>
+        </nav>
+
+        <div class="tab-panel" id="panel-historial">
+          <h2 class="tab-panel__titulo">Historial de Entregas y Pagos</h2>
+          <div id="historial-vacio" class="panel-vacio" hidden>Sin visitas registradas.</div>
+          <ul id="historial-lista" class="historial-lista"></ul>
+        </div>
+
+        <div class="tab-panel" id="panel-productos" hidden>
+          <div class="productos-header">
+            <h2 class="tab-panel__titulo">Gestión de Productos en Domicilio</h2>
+            <button type="button" id="btn-retirar-dispenser" class="btn-retirar-dispenser" hidden>
+              Retirar Dispenser
+            </button>
+          </div>
+
+          <div class="movimiento-card">
+            <p class="movimiento-card__titulo">Registrar venta:</p>
+            <div id="productos-form" class="productos-form"></div>
+            <div class="movimiento-resumen">
+              <div class="resumen-item">
+                <span class="resumen-item__label">Monto total</span>
+                <span id="monto-total" class="resumen-item__valor resumen-item__valor--total">$0</span>
+              </div>
+              <label class="resumen-item resumen-item--input">
+                <span class="resumen-item__label">Monto pagado ($)</span>
+                <input type="number" id="monto-pagado" class="monto-input" value="0" min="0" step="100">
+              </label>
+              <div class="resumen-item" id="resumen-saldo" hidden>
+                <span class="resumen-item__label">Queda a deber</span>
+                <span id="monto-saldo" class="resumen-item__valor resumen-item__valor--deuda">$0</span>
+              </div>
+            </div>
+            <div class="movimiento-footer">
+              <button type="button" id="btn-guardar-movimiento" class="btn-guardar-movimiento">
+                Registrar venta
+              </button>
+            </div>
+            <p id="movimiento-error" class="form-error" hidden></p>
+          </div>
+
+          <div class="stock-seccion">
+            <h3 class="stock-seccion__titulo">Stock actual en casa del cliente</h3>
+            <div id="stock-cards" class="stock-cards"></div>
+          </div>
+        </div>
+
+        <div class="tab-panel" id="panel-notas" hidden>
+          <div class="notas-header">
+            <h2 class="tab-panel__titulo">Notas Internas</h2>
+            <button type="button" id="btn-editar-nota" class="btn-editar-nota">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 20h9"/><path d="M16.5 3.5a2.1 2.1 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z"/>
+              </svg>
+              Editar
+            </button>
+          </div>
+          <div id="nota-vista" class="nota-caja"></div>
+          <div id="nota-edicion" class="nota-edicion" hidden>
+            <textarea id="nota-texto" class="nota-textarea" rows="4" placeholder="Escribí una nota interna..."></textarea>
+            <div class="nota-acciones">
+              <button type="button" id="btn-cancelar-nota" class="btn-cancelar-nota">Cancelar</button>
+              <button type="button" id="btn-guardar-nota" class="btn-guardar-nota">Guardar</button>
+            </div>
+          </div>
+          <p id="nota-error" class="form-error" hidden></p>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <div id="modal-editar" class="modal" hidden>
+    <div class="modal__fondo" data-cerrar></div>
+    <div class="modal__caja">
+      <h2>Editar cliente</h2>
+      <form id="form-editar" class="form-nuevo">
+        <label>
+          Nombre
+          <input type="text" name="nombre" required>
+        </label>
+        <label>
+          Dirección
+          <input type="text" name="direccion" required>
+        </label>
+        <label>
+          Teléfono
+          <input type="tel" name="telefono" required>
+        </label>
+        <label>
+          Repartidor
+          <select name="repartidor_id" id="form-repartidor" required></select>
+        </label>
+        <div class="form-grupo">
+          <span class="form-grupo__label">Días de visita</span>
+          <div class="dia-botones" id="dias-visita">
+            <button type="button" class="dia-btn" data-dia="Lunes">Lun</button>
+            <button type="button" class="dia-btn" data-dia="Martes">Mar</button>
+            <button type="button" class="dia-btn" data-dia="Miércoles">Mié</button>
+            <button type="button" class="dia-btn" data-dia="Jueves">Jue</button>
+            <button type="button" class="dia-btn" data-dia="Viernes">Vie</button>
+            <button type="button" class="dia-btn" data-dia="Sábados">Sáb</button>
+          </div>
+        </div>
+        <div class="form-grupo">
+          <span class="form-grupo__label">¿Tiene dispenser?</span>
+          <div class="toggle-grupo" id="dispenser-toggle">
+            <button type="button" class="toggle-btn" data-dispenser="no">No</button>
+            <button type="button" class="toggle-btn" data-dispenser="si">Sí</button>
+          </div>
+        </div>
+        <p id="form-error" class="form-error" hidden></p>
+        <div class="modal__acciones">
+          <button type="button" class="btn-cancelar" data-cerrar>Cancelar</button>
+          <button type="submit" class="btn-guardar">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="../../components/navbar.js"></script>
+  <script src="cliente.js"></script>
+</body>
+
+</html>

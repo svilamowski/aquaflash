@@ -1,99 +1,418 @@
-/* 1. Reset básico para quitar márgenes predeterminados */
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+.clientes-page {
+    padding: 24px 32px 40px;
+    max-width: 1100px;
+    margin: 0 auto;
 }
 
-body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f4f4f4;
-}
-
-/* 2. Contenedor principal de la barra de navegación */
-nav {
-    background-color: #0d6efd;
-    /* Color azul brillante de la foto */
-    height: 60px;
+.clientes-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 0 40px;
+    gap: 16px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
 }
 
-/* 3. Estilo del Logo y texto AquaFlash pegado */
-nav div {
+.clientes-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.clientes-header-actions {
     display: flex;
     align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
 }
 
-/* Estilo para el primer enlace (AquaFlash) dentro de la lista */
-/* Controla el tamaño de la imagen del logo */
-.imagen-logo img {
-    display: block;
-    padding: 12px;
-}
-
-/* 3. Estilo del Logo y texto AquaFlash alineados */
-.logo {
-    display: flex;
-    align-items: center;
-    /* Espacio horizontal exacto entre la gota y la palabra AquaFlash */
-}
-
-/* Quitamos cualquier subrayado del enlace que envuelve a la imagen */
-.imagen-logo {
-    text-decoration: none;
-    display: flex;
-    align-items: center;
-}
-
-/* Controla el tamaño real de la imagen en pantalla */
-.imagen-logo img {
-    height: 70px;
-    /* Tamaño ideal para que resalte sin romper el nav de 70px */
-    margin: 0;
-    width: auto;
-    display: block;
-}
-
-/* Estilo limpio para el texto "AquaFlash" */
-.texto-logo {
-    color: #ffffff;
-    text-decoration: none;
-    /* Borra por completo la línea inferior morada/azul */
-    font-size: 20px;
-    /* Un poco más grande para acompañar la imagen */
-    font-weight: bold;
-    letter-spacing: 0.5px;
-    display: inline-block;
-}
-
-/* 4. Contenedor de la lista de enlaces */
-nav ul {
-    display: flex;
-    align-items: center;
-    list-style: none;
-    gap: 30px;
-    /* Espaciado uniforme entre pestañas */
-}
-
-/* Estilo general para todos los enlaces */
-nav ul li a {
-    color: #ffffff;
-    text-decoration: none;
-    font-size: 16px;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    /* Espacio entre el emoji/icono y el texto */
-    padding: 8px 16px;
+.busqueda-input {
+    width: 280px;
+    max-width: 100%;
+    padding: 10px 14px;
+    border: 1px solid #dee2e6;
     border-radius: 8px;
+    font-size: 14px;
+    background: #fff;
+}
+
+.busqueda-input:focus {
+    outline: none;
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+}
+
+.btn-nuevo {
+    background: #22c55e;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
     transition: background 0.2s ease;
 }
 
-/* Efecto hover suave al pasar el mouse */
-nav ul li a:hover {
-    background-color: rgba(255, 255, 255, 0.15);
+.btn-nuevo:hover {
+    background: #16a34a;
+}
+
+.filtros {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 24px;
+}
+
+.filtro-pill {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.filtro-pill:hover {
+    border-color: #0d6efd;
+    color: #0d6efd;
+}
+
+.filtro-pill.active {
+    background: #0d6efd;
+    border-color: #0d6efd;
+    color: #fff;
+}
+
+.filtro-select {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13px;
+    color: #495057;
+    cursor: pointer;
+}
+
+.lista-clientes {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.tarjeta-cliente {
+    background: #fff;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    overflow: hidden;
+    width: 100%;
+}
+
+.tarjeta-cliente__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 20px 24px 12px;
+}
+
+.tarjeta-cliente__nombre {
+    font-size: 18px;
+    font-weight: 700;
+    color: #1a1a1a;
+}
+
+.tarjeta-cliente__nombre-link {
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+
+.tarjeta-cliente__nombre-link:hover {
+    color: #0d6efd;
+}
+
+.tarjeta-cliente__deuda {
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 8px;
+    white-space: nowrap;
+}
+
+.tarjeta-cliente__deuda--ok {
+    background: #dcfce7;
+    color: #15803d;
+}
+
+.tarjeta-cliente__deuda--alerta {
+    background: #fee2e2;
+    color: #b91c1c;
+}
+
+.tarjeta-cliente__info {
+    padding: 0 24px 16px;
+}
+
+.tarjeta-cliente__direccion {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 14px;
+    color: #6c757d;
+    margin-bottom: 8px;
+}
+
+.tarjeta-cliente__direccion svg {
+    flex-shrink: 0;
+    color: #adb5bd;
+}
+
+.tarjeta-cliente__fechas {
+    display: flex;
+    gap: 20px;
+    font-size: 13px;
+    color: #868e96;
+}
+
+.tarjeta-cliente__stock {
+    background: #f8f9fa;
+    margin: 0 16px;
+    padding: 14px 16px;
+    border-radius: 8px;
+}
+
+.tarjeta-cliente__stock-titulo {
+    font-size: 12px;
+    font-weight: 700;
+    color: #868e96;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    margin-bottom: 10px;
+}
+
+.tarjeta-cliente__stock-lista {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.tarjeta-cliente__stock-item {
+    display: flex;
+    justify-content: space-between;
+    font-size: 14px;
+    color: #495057;
+}
+
+.tarjeta-cliente__stock-vacio {
+    font-size: 13px;
+    color: #adb5bd;
+    font-style: italic;
+}
+
+.tarjeta-cliente__acciones {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 16px 12px 12px;
+    margin-top: 12px;
+    border-top: 1px solid #f1f3f5;
+}
+
+.accion-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    color: #495057;
+    font-size: 11px;
+    cursor: pointer;
+    padding: 4px 8px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: background 0.2s ease, color 0.2s ease;
+}
+
+.accion-btn:hover {
+    background: #f1f3f5;
+    color: #0d6efd;
+}
+
+.accion-btn svg {
+    width: 22px;
+    height: 22px;
+    stroke: currentColor;
+}
+
+.accion-btn--peligro:hover {
+    color: #dc3545;
+}
+
+.mensaje-estado {
+    text-align: center;
+    padding: 40px 20px;
+    color: #6c757d;
+    font-size: 15px;
+}
+
+.mensaje-estado--error {
+    color: #b91c1c;
+}
+
+/* Modal nuevo cliente */
+.modal[hidden] {
+    display: none;
+}
+
+.modal {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.modal__fondo {
+    position: absolute;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.45);
+}
+
+.modal__caja {
+    position: relative;
+    background: #fff;
+    border-radius: 12px;
+    padding: 24px;
+    width: 100%;
+    max-width: 440px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+}
+
+.modal__caja h2 {
+    font-size: 20px;
+    margin-bottom: 20px;
+    color: #1a1a1a;
+}
+
+.form-nuevo {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.form-nuevo label {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.form-nuevo input,
+.form-nuevo select {
+    padding: 10px 12px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 400;
+}
+
+.form-nuevo input:focus,
+.form-nuevo select:focus {
+    outline: none;
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 3px rgba(13, 110, 253, 0.15);
+}
+
+.form-error {
+    color: #b91c1c;
+    font-size: 13px;
+}
+
+.modal__acciones {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.btn-cancelar {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 10px 16px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.btn-guardar {
+    background: #22c55e;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.btn-guardar:hover {
+    background: #16a34a;
+}
+
+.form-grupo {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-grupo__label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #495057;
+}
+
+.dia-botones,
+.toggle-grupo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.dia-btn,
+.toggle-btn {
+    background: #fff;
+    border: 1px solid #dee2e6;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 13px;
+    font-weight: 500;
+    color: #495057;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.dia-btn:hover,
+.toggle-btn:hover {
+    border-color: #0d6efd;
+    color: #0d6efd;
+}
+
+.dia-btn.active,
+.toggle-btn.active {
+    background: #0d6efd;
+    border-color: #0d6efd;
+    color: #fff;
 }

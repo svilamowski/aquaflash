@@ -1,5 +1,19 @@
 import pool from '../database/pool.js';
 
+export const getStockEnCasas = async () => {
+    const { data, error } = await pool
+        .from('productos_clientes')
+        .select('producto_id, cantidad');
+
+    if (error) throw new Error('Error al leer stock en casas: ' + error.message);
+
+    const totales = {};
+    data.forEach((row) => {
+        totales[row.producto_id] = (totales[row.producto_id] ?? 0) + row.cantidad;
+    });
+    return totales;
+};
+
 export const getStockFabrica = async () => {
     // SELECT sf.*, p.nombre 
     // FROM stock_fabrica sf
@@ -75,4 +89,5 @@ export default class StockRepository {
     createStockFabrica = createStockFabrica;
     ajustarStockPorVenta = ajustarStockPorVenta;
     descartarStock = descartarStock;
+    getStockEnCasas = getStockEnCasas;
 }

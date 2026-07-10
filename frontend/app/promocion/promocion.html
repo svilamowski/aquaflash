@@ -1,13 +1,114 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
+
 <head>
-    <link rel="stylesheet" href="promocion.css">
-    <link rel="icon" href="../../public/logo2.png">
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AquaFlash</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AquaFlash - Promoción</title>
+  <link rel="icon" href="../../public/logo2.png">
+  <link rel="stylesheet" href="../../components/base.css">
+  <link rel="stylesheet" href="../../components/navbar.css">
+  <link rel="stylesheet" href="../index/index.css">
+  <link rel="stylesheet" href="promocion.css">
 </head>
+
 <body>
-    
+  <div id="navbar"></div>
+
+  <main class="page-content clientes-page">
+    <header class="clientes-header">
+      <h1>Promociones</h1>
+      <div class="clientes-header-actions">
+        <input type="search" id="busqueda" class="busqueda-input" placeholder="Buscar promoción...">
+        <button type="button" class="btn-nuevo" id="btn-nueva-promo">+ Agregar promoción</button>
+      </div>
+    </header>
+
+    <section id="lista-promos" class="lista-promos"></section>
+    <p id="mensaje-estado" class="mensaje-estado" hidden></p>
+  </main>
+
+  <div id="modal-promo" class="modal" hidden>
+    <div class="modal__fondo" data-cerrar></div>
+    <div class="modal__caja">
+      <h2>Nueva promoción</h2>
+      <form id="form-promo" class="form-nuevo">
+        <p class="promo-fechas-info">
+          <span id="promo-fecha-inicio"></span>
+          <span id="promo-fecha-retiro"></span>
+        </p>
+        <label>
+          Nombre
+          <input type="text" name="nombre" required placeholder="Ej: Consultorio Dental">
+        </label>
+        <label>
+          Dirección
+          <input type="text" name="direccion" required placeholder="Ej: Av. Santa Fe 3200">
+        </label>
+        <label>
+          Teléfono
+          <input type="tel" name="telefono" required placeholder="Ej: 1144556677">
+        </label>
+        <label>
+          Repartidor
+          <select name="repartidor_id" id="form-repartidor" required>
+            <option value="">Seleccionar...</option>
+          </select>
+        </label>
+
+        <p id="form-error" class="form-error" hidden></p>
+        <div class="modal__acciones">
+          <button type="button" class="btn-cancelar" data-cerrar>Cancelar</button>
+          <button type="submit" class="btn-guardar">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <template id="tpl-promo">
+    <article class="promo-card">
+      <h2 class="promo-card__nombre"></h2>
+      <p class="promo-card__direccion">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/>
+        </svg>
+        <span class="promo-card__direccion-texto"></span>
+      </p>
+      <p class="promo-card__telefono">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/>
+        </svg>
+        <span class="promo-card__telefono-texto"></span>
+      </p>
+      <div class="promo-card__fechas">
+        <span class="promo-card__dejado"></span>
+        <span class="promo-card__retirar"></span>
+      </div>
+      <p class="promo-card__alerta" hidden>
+        ¡Atención! Ya pasaron los 7 días de prueba. Debe retirarse o cobrar.
+      </p>
+      <div class="tarjeta-cliente__acciones promo-card__acciones">
+        <a class="accion-btn accion-maps" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M12 21s7-4.5 7-11a7 7 0 1 0-14 0c0 6.5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>
+          <span>Maps</span>
+        </a>
+        <a class="accion-btn accion-wapp" target="_blank" rel="noopener">
+          <svg viewBox="0 0 24 24" fill="none" stroke-width="1.8"><path d="M21 11.5a8.4 8.4 0 0 1-1.2 4.3 8.5 8.5 0 0 1-7.3 4.2 8.4 8.4 0 0 1-3.8-.9L3 20l1.9-5.5a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.2-7.3A8.4 8.4 0 0 1 12.5 3 8.5 8.5 0 0 1 21 11.5z"/></svg>
+          <span>WhatsApp</span>
+        </a>
+      </div>
+      <button type="button" class="btn-agregar-cliente" data-accion="agregar">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/>
+          <path d="M19 8v6"/><path d="M22 11h-6"/>
+        </svg>
+        Agregar como Cliente
+      </button>
+    </article>
+  </template>
+
+  <script src="../../components/navbar.js"></script>
+  <script src="promocion.js"></script>
 </body>
+
 </html>

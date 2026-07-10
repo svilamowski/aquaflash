@@ -13,7 +13,7 @@ export const getStockEnCasa = async (clienteId) => {
     // WHERE pc.cliente_id = $1
     const { data, error } = await pool
         .from('productos_clientes')
-        .select('cantidad, productos(nombre, precio)')
+        .select('cantidad, producto_id, productos(nombre, precio)')
         .eq('cliente_id', clienteId);
         
     if (error) throw new Error('Error al obtener stock del cliente: ' + error.message);
@@ -89,6 +89,58 @@ export const getClientesEnPromocion = async () => {
         
     if (error) throw new Error('Error al obtener clientes en promoción: ' + error.message);
     return data;
+};
+
+export const getCantidadProductoCliente = async (clienteId, productoId) => {
+    const { data, error } = await pool
+        .from('productos_clientes')
+        .select('cantidad')
+        .eq('cliente_id', clienteId)
+        .eq('producto_id', productoId)
+        .maybeSingle();
+
+    if (error) throw new Error('Error al consultar stock del cliente: ' + error.message);
+    return data?.cantidad ?? 0;
+};
+
+export const asignarProductoCliente = async (clienteId, productoId, cantidad) => {
+    const actual = await getCantidadProductoCliente(clienteId, productoId);
+
+    if (actual > 0) {
+        const { error } = await pool
+            .from('productos_clientes')
+            .update({ cantidad: actual + cantidad })
+            .eq('cliente_id', clienteId)
+            .eq('producto_id', productoId);
+        if (error) throw new Error('Error al asignar producto al cliente: ' + error.message);
+        return;
+    }
+
+    const { error } = await pool
+        .from('productos_clientes')
+        .insert([{ cliente_id: clienteId, producto_id: productoId, cantidad }]);
+    if (error) throw new Error('Error al asignar producto al cliente: ' + error.message);
+};
+
+export const quitarProductoCliente = async (clienteId, productoId, cantidad = 1) => {
+    const actual = await getCantidadProductoCliente(clienteId, productoId);
+    if (actual <= 0) return;
+
+    if (actual <= cantidad) {
+        const { error } = await pool
+            .from('productos_clientes')
+            .delete()
+            .match({ cliente_id: clienteId, producto_id: productoId });
+        if (error) throw new Error('Error al quitar producto del cliente: ' + error.message);
+        return;
+    }
+
+    const { error } = await pool
+        .from('productos_clientes')
+        .update({ cantidad: actual - cantidad })
+        .eq('cliente_id', clienteId)
+        .eq('producto_id', productoId);
+    if (error) throw new Error('Error al quitar producto del cliente: ' + error.message);
 };
 
 export const getNotaInterna = async (clienteId) => {
@@ -203,6 +255,9 @@ export const deleteCliente = async (clienteId) => {
 export default class ClienteRepository {
     getAllClientes = getAllClientes;
     getStockEnCasa = getStockEnCasa;
+    getCantidadProductoCliente = getCantidadProductoCliente;
+    asignarProductoCliente = asignarProductoCliente;
+    quitarProductoCliente = quitarProductoCliente;
     getClienteById = getClienteById;
     getClientesByNombre = getClientesByNombre;
     getClientesByDireccion = getClientesByDireccion;
