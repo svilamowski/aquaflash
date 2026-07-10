@@ -1,3 +1,37 @@
+:root {
+    --bg: #f4f4f4;
+    --surface: #ffffff;
+    --surface-2: #f8f9fa;
+    --surface-3: #f1f3f5;
+    --border: #e9ecef;
+    --border-input: #dee2e6;
+    --text: #1a1a1a;
+    --text-secondary: #495057;
+    --text-muted: #6c757d;
+    --text-faint: #868e96;
+    --shadow: rgba(0, 0, 0, 0.06);
+    --input-bg: #ffffff;
+    --navbar-bg: #0d6efd;
+    --navbar-active: #0a58ca;
+}
+
+html[data-theme="dark"] {
+    --bg: #111827;
+    --surface: #1f2937;
+    --surface-2: #374151;
+    --surface-3: #4b5563;
+    --border: #374151;
+    --border-input: #4b5563;
+    --text: #f3f4f6;
+    --text-secondary: #d1d5db;
+    --text-muted: #9ca3af;
+    --text-faint: #6b7280;
+    --shadow: rgba(0, 0, 0, 0.3);
+    --input-bg: #111827;
+    --navbar-bg: #1e3a8a;
+    --navbar-active: #1d4ed8;
+}
+
 * {
     margin: 0;
     padding: 0;
@@ -6,13 +40,186 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f4f4f4;
-    color: #1a1a1a;
+    background-color: var(--bg);
+    color: var(--text);
     min-height: 100vh;
+    overflow-x: hidden;
+    transition: background-color 0.2s ease, color 0.2s ease;
 }
 
 main.page-content {
     padding: 24px 32px 40px;
     max-width: 1200px;
+    width: 100%;
     margin: 0 auto;
+    min-width: 0;
+}
+
+/* Títulos de página */
+html[data-theme="dark"] .clientes-header h1,
+html[data-theme="dark"] .stock-header h1,
+html[data-theme="dark"] .notificaciones-header h1,
+html[data-theme="dark"] .estadisticas-header h1,
+html[data-theme="dark"] .cliente-header h1,
+html[data-theme="dark"] .promo-card__nombre,
+html[data-theme="dark"] .tarjeta-cliente__nombre,
+html[data-theme="dark"] .producto-card__nombre,
+html[data-theme="dark"] .ajuste-panel__titulo,
+html[data-theme="dark"] .panel__titulo,
+html[data-theme="dark"] .tab-panel__titulo,
+html[data-theme="dark"] .modal__caja h2 {
+    color: var(--text);
+}
+
+/* Tarjetas y paneles */
+html[data-theme="dark"] .tarjeta-cliente,
+html[data-theme="dark"] .promo-card,
+html[data-theme="dark"] .ajuste-panel,
+html[data-theme="dark"] .producto-card,
+html[data-theme="dark"] .kpi-card,
+html[data-theme="dark"] .panel,
+html[data-theme="dark"] .cliente-card,
+html[data-theme="dark"] .metrica-card,
+html[data-theme="dark"] .historial-item,
+html[data-theme="dark"] .movimiento-card,
+html[data-theme="dark"] .modal__caja,
+html[data-theme="dark"] .filtro-campo {
+    background: var(--surface);
+    border-color: var(--border);
+    box-shadow: 0 2px 8px var(--shadow);
+}
+
+html[data-theme="dark"] .notif-card--leida {
+    background: var(--surface);
+    border-color: var(--border);
+}
+
+html[data-theme="dark"] .notif-card--leida .notif-card__mensaje {
+    color: var(--text-muted);
+}
+
+html[data-theme="dark"] .notif-card--leida .notif-card__icono {
+    background: var(--surface-2);
+    color: var(--text-faint);
+}
+
+/* Textos secundarios */
+html[data-theme="dark"] .tarjeta-cliente__direccion,
+html[data-theme="dark"] .tarjeta-cliente__meta,
+html[data-theme="dark"] .tarjeta-cliente__stock,
+html[data-theme="dark"] .promo-card__direccion,
+html[data-theme="dark"] .promo-card__telefono,
+html[data-theme="dark"] .promo-card__fechas,
+html[data-theme="dark"] .cliente-contacto,
+html[data-theme="dark"] .metrica-card__label,
+html[data-theme="dark"] .historial-item__detalle,
+html[data-theme="dark"] .mensaje-estado,
+html[data-theme="dark"] .kpi-card__label,
+html[data-theme="dark"] .kpi-card__detalle,
+html[data-theme="dark"] .ajuste-form__campo,
+html[data-theme="dark"] .producto-card__bloque-titulo,
+html[data-theme="dark"] .notif-card__fecha {
+    color: var(--text-muted);
+}
+
+html[data-theme="dark"] .kpi-card__valor,
+html[data-theme="dark"] .producto-card__bloque-numero,
+html[data-theme="dark"] .historial-item__fecha,
+html[data-theme="dark"] .metrica-card__valor,
+html[data-theme="dark"] .notif-card__mensaje {
+    color: var(--text);
+}
+
+/* Inputs y selects */
+html[data-theme="dark"] .busqueda-input,
+html[data-theme="dark"] .filtro-pill,
+html[data-theme="dark"] .filtro-select,
+html[data-theme="dark"] .filtro-campo select,
+html[data-theme="dark"] .ajuste-form select,
+html[data-theme="dark"] .ajuste-form input,
+html[data-theme="dark"] .form-nuevo input,
+html[data-theme="dark"] .form-nuevo select,
+html[data-theme="dark"] .dia-btn,
+html[data-theme="dark"] .toggle-btn,
+html[data-theme="dark"] .btn-cancelar,
+html[data-theme="dark"] .producto-card__bloque,
+html[data-theme="dark"] .producto-card__min,
+html[data-theme="dark"] .historial-item,
+html[data-theme="dark"] .tabs,
+html[data-theme="dark"] .tab-panel,
+html[data-theme="dark"] .promo-fechas-info {
+    background: var(--input-bg);
+    border-color: var(--border-input);
+    color: var(--text-secondary);
+}
+
+html[data-theme="dark"] .filtro-campo select option {
+    background: var(--surface);
+    color: var(--text);
+}
+
+html[data-theme="dark"] .filtro-pill:hover,
+html[data-theme="dark"] .dia-btn:hover,
+html[data-theme="dark"] .toggle-btn:hover {
+    color: #60a5fa;
+    border-color: #60a5fa;
+}
+
+html[data-theme="dark"] .tab {
+    color: var(--text-muted);
+}
+
+html[data-theme="dark"] .tab:hover {
+    color: var(--text);
+}
+
+html[data-theme="dark"] .tab.active {
+    color: #60a5fa;
+    border-color: #60a5fa;
+}
+
+html[data-theme="dark"] .btn-volver {
+    color: var(--text-secondary);
+}
+
+html[data-theme="dark"] .btn-volver:hover {
+    color: #60a5fa;
+}
+
+html[data-theme="dark"] .accion-btn {
+    color: var(--text-muted);
+}
+
+html[data-theme="dark"] .tarjeta-cliente__acciones {
+    border-color: var(--border);
+}
+
+html[data-theme="dark"] .accion-btn + .accion-btn {
+    border-color: var(--border);
+}
+
+html[data-theme="dark"] .producto-card__total {
+    background: #312e81;
+    border-color: #4338ca;
+}
+
+html[data-theme="dark"] .badge-total {
+    background: var(--surface-2);
+    color: var(--text-secondary);
+    border-color: var(--border);
+}
+
+html[data-theme="dark"] .form-nuevo label,
+html[data-theme="dark"] .form-grupo__label {
+    color: var(--text-secondary);
+}
+
+html[data-theme="dark"] .cliente-deuda-card {
+    background: #064e3b;
+    border-color: #065f46;
+}
+
+html[data-theme="dark"] .cliente-deuda-card--alerta {
+    background: #7f1d1d;
+    border-color: #991b1b;
 }
