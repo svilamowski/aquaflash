@@ -23,7 +23,7 @@ INSERT INTO public.stock_fabrica (id, producto_id, cantidad) VALUES
 (1, 1, 450),
 (2, 2, 300),
 (3, 3, 150),
-(4, 4, 100),
+(4, 4, 25),
 (5, 5, 20);
 
 -- ==============================================================================
@@ -92,12 +92,9 @@ INSERT INTO public.clientes_filtros (filtro_id, cliente_id) VALUES
 (2, 4);
 
 -- ==============================================================================
--- 10. NOTIFICACIONES (Datos iniciales para probar la UI)
+-- 10. NOTIFICACIONES (se generan automáticamente al consultar /api/notificacion)
 -- ==============================================================================
-INSERT INTO public.notificaciones (id, mensaje, leido, fecha) VALUES 
-(1, 'ALERTA STOCK: El producto "Sifón descartable 2L" está por debajo de la cantidad mínima (100/30).', false, CURRENT_TIMESTAMP),
-(2, 'MOROSIDAD: Panadería La Central superó el límite de deuda ($215,000).', false, CURRENT_TIMESTAMP - INTERVAL '1 hour'),
-(3, 'INACTIVIDAD: Kiosco El Sol no compra hace más de 90 días y tiene 4 productos retenidos.', false, CURRENT_TIMESTAMP - INTERVAL '2 hours');
+-- Ejecutar también: backend/src/database/migrations/add_notificacion_clave.sql
 
 -- ==============================================================================
 -- 11. VISITAS y VENTAS HISTÓRICAS (Para alimentar las estadísticas)

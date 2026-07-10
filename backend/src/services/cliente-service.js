@@ -1,6 +1,7 @@
 import ClienteRepository from '../repositories/cliente-repository.js';
 import ProductoRepository from '../repositories/producto-repository.js';
 import StockRepository from '../repositories/stock-repository.js';
+import { sincronizarNotificaciones } from './notificacion-reglas-service.js';
 
 const NOMBRE_DISPENSER = 'Dispenser Frío/Calor';
 
@@ -73,6 +74,7 @@ export default class ClienteService {
             await this.asignarDispenser(cliente.id);
         }
 
+        await sincronizarNotificaciones();
         return cliente;
     }
 
@@ -101,6 +103,7 @@ export default class ClienteService {
             }
         }
 
+        await sincronizarNotificaciones();
         return returnData;
     }
 
