@@ -1,8 +1,47 @@
 import StockRepository from '../repositories/stock-repository.js';
+import ProductoRepository from '../repositories/producto-repository.js';
 
 export default class StockService {
     constructor() {
         this.stockRepo = new StockRepository();
+        this.productoRepo = new ProductoRepository();
+    }
+
+    getStockResumen = async () => {
+        const [productos, fabrica, casas] = await Promise.all([
+            this.productoRepo.getAllProductos(),
+            this.stockRepo.getStockFabrica(),
+            this.stockRepo.getStockEnCasas(),
+        ]);
+
+        const fabricaPorProducto = Object.fromEntries(
+            fabrica.map((f) => [f.producto_id, f.cantidad])
+        );
+
+        return productos.map((p) => {
+            const enFabrica = fabricaPorProducto[p.id] ?? 0;
+            const enCasas = casas[p.id] ?? 0;
+            return {
+                id: p.id,
+                nombre: p.nombre,
+                precio: p.precio,
+                cantidad_minima_fabrica: p.cantidad_minima_fabrica,
+                en_fabrica: enFabrica,
+                en_casas: enCasas,
+                total: enFabrica + enCasas,
+            };
+        });
+    }
+
+    comprarStock = async (productoId, cantidad) => {
+        if (!productoId) throw new Error('El ID del producto es obligatorio');
+        if (!cantidad || cantidad <= 0) throw new Error('La cantidad a comprar debe ser mayor a 0');
+
+        const fabrica = await this.stockRepo.getStockFabrica();
+        const item = fabrica.find((f) => f.producto_id === productoId);
+        if (!item) throw new Error('No se encontró stock de fábrica para ese producto');
+
+        return this.stockRepo.updateStockCantidad(productoId, item.cantidad + cantidad);
     }
 
     getStockFabrica = async () => {

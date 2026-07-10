@@ -1,14 +1,30 @@
-# Mueve a la carpeta frontend y levanta un servidor con hot-reload
+# Frontend con hot-reload
 run-front:
-	cd frontend && npx live-server --port=8080
+	cd frontend && npx --yes live-server --port=8080
 
-# Mueve a la carpeta backend y levanta Docker en segundo plano (-d)
+# Backend en segundo plano (sin Docker)
 run-back:
-	cd backend && docker compose up -d
+	@echo "Iniciando backend en http://localhost:3000 ..."
+	@cd backend && npm run dev > /tmp/aquaflash-backend.log 2>&1 & echo $$! > /tmp/aquaflash-backend.pid
+	@sleep 1
+	@echo "Backend PID: $$(cat /tmp/aquaflash-backend.pid)"
 
-# Ejecuta el backend (que al estar en 2do plano avanza rápido) y luego el frontend
+# Levanta backend + frontend
 run: run-back run-front
 
-# Agregamos este para poder apagar todo fácil
+# Apaga el backend local
 stop:
+	@if [ -f /tmp/aquaflash-backend.pid ]; then \
+		kill $$(cat /tmp/aquaflash-backend.pid) 2>/dev/null || true; \
+		rm -f /tmp/aquaflash-backend.pid; \
+		echo "Backend detenido."; \
+	else \
+		echo "No hay backend local corriendo."; \
+	fi
+
+# Opcional: si tenés Docker Compose instalado
+run-docker:
+	cd backend && docker compose up -d
+
+stop-docker:
 	cd backend && docker compose down

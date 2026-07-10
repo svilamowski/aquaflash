@@ -1,6 +1,7 @@
 import VisitaRepository from '../repositories/visita-repository.js';
 import StockRepository from '../repositories/stock-repository.js';
 import ProductoRepository from '../repositories/producto-repository.js';
+import ClienteRepository from '../repositories/cliente-repository.js';
 
 const formatearProductos = (ventas, campoCantidad) => {
     if (!ventas?.length) return '-';
@@ -16,7 +17,27 @@ export default class VisitaService {
         this.visitaRepo = new VisitaRepository();
         this.stockRepo = new StockRepository();
         this.productoRepo = new ProductoRepository();
+        this.clienteRepo = new ClienteRepository();
     }
+
+    actualizarStockCliente = async (clienteId, ventasArray) => {
+        for (const venta of ventasArray) {
+            if (venta.cantidad_entregada > 0) {
+                await this.clienteRepo.asignarProductoCliente(
+                    clienteId,
+                    venta.producto_id,
+                    venta.cantidad_entregada
+                );
+            }
+            if (venta.cantidad_retirada > 0) {
+                await this.clienteRepo.quitarProductoCliente(
+                    clienteId,
+                    venta.producto_id,
+                    venta.cantidad_retirada
+                );
+            }
+        }
+    };
 
     mapearProductosAVentas = async (visitaId, productos) => {
         const ventas = [];
@@ -55,6 +76,28 @@ export default class VisitaService {
 
         const { productos, entregado, retirado, id, ...cabecera } = visitaData;
 
+        if (productos?.length) {
+            for (const item of productos) {
+                const retirada = item.cantidad_retirada ?? 0;
+                if (retirada <= 0) continue;
+
+                let productoId = item.producto_id;
+                if (!productoId) {
+                    const nombre = item.productos?.nombre ?? item.nombre;
+                    const producto = await this.productoRepo.getProductoByNombre(nombre);
+                    productoId = producto?.id;
+                }
+
+                const enCasa = await this.clienteRepo.getCantidadProductoCliente(
+                    cabecera.cliente_id,
+                    productoId
+                );
+                if (retirada > enCasa) {
+                    throw new Error('No se pueden retirar más vacíos de los que el cliente tiene en casa');
+                }
+            }
+        }
+
         const montoTotalVenta = cabecera.monto_total_venta ?? productos?.reduce(
             (total, item) => total + (item.precio_total_producto ?? 0),
             0
@@ -78,6 +121,20 @@ export default class VisitaService {
         if (productos?.length) {
             const ventasArray = await this.mapearProductosAVentas(visita.id, productos);
             await this.createVentasProductos(ventasArray);
+            await this.actualizarStockCliente(cabecera.cliente_id, ventasArray);
+        }
+
+        const huboEntrega = productos?.some((p) => (p.cantidad_entregada ?? 0) > 0);
+        const actualizacionCliente = { id: cabecera.cliente_id };
+
+        if (huboEntrega || cabecera.compro) {
+            actualizacionCliente.ultima_compra = fechaValida.toISOString().split('T')[0];
+        }
+        if ((cabecera.monto_pagado ?? 0) > 0) {
+            actualizacionCliente.ultimo_pago = fechaValida.toISOString().split('T')[0];
+        }
+        if (actualizacionCliente.ultima_compra || actualizacionCliente.ultimo_pago) {
+            await this.clienteRepo.alterCliente(actualizacionCliente);
         }
 
         const historial = await this.visitaRepo.getVisitasByCliente(visita.cliente_id);
@@ -128,6 +185,7 @@ export default class VisitaService {
             id: visita.id,
             fecha: visita.fecha,
             monto_pagado: visita.monto_pagado,
+            monto_total_venta: visita.monto_total_venta,
             compro: visita.compro,
             entregado: formatearProductos(visita.ventas_productos, 'cantidad_entregada'),
             retirado: formatearProductos(visita.ventas_productos, 'cantidad_retirada'),

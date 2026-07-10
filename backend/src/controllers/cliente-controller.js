@@ -6,9 +6,13 @@ const svc = new ClienteService();
 let returnArray;
 
 // Obtener todos los clientes
-router.get('/', async (req, res) => { 
-    returnArray = await svc.getAllClientes();
-    res.status(200).send(returnArray);   
+router.get('/', async (req, res) => {
+    try {
+        returnArray = await svc.getAllClientes();
+        res.status(200).send(returnArray);
+    } catch (error) {
+        res.status(500).json({ message: 'Error al obtener clientes', error: error.message });
+    }
 });
 
 // Filtrar clientes con deuda
