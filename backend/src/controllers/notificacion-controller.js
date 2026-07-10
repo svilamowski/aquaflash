@@ -5,6 +5,16 @@ const router = Router();
 const svc = new NotificacionService();
 let returnArray;
 
+// Obtener todas las notificaciones
+router.get('/', async (req, res) => {
+    try {
+        returnArray = await svc.getAllNotificaciones();
+        res.status(200).send(returnArray);
+    } catch (error) {
+        res.status(500).json({ message: 'Error interno al obtener las notificaciones', error: error.message });
+    }
+});
+
 // Obtener todas las notificaciones no leídas
 router.get('/no-leidas', async (req, res) => {
     try {

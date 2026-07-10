@@ -2,6 +2,7 @@ import VisitaRepository from '../repositories/visita-repository.js';
 import StockRepository from '../repositories/stock-repository.js';
 import ProductoRepository from '../repositories/producto-repository.js';
 import ClienteRepository from '../repositories/cliente-repository.js';
+import { sincronizarNotificaciones } from './notificacion-reglas-service.js';
 
 const formatearProductos = (ventas, campoCantidad) => {
     if (!ventas?.length) return '-';
@@ -139,6 +140,8 @@ export default class VisitaService {
 
         const historial = await this.visitaRepo.getVisitasByCliente(visita.cliente_id);
         const visitaCreada = historial.find((v) => v.id === visita.id);
+
+        await sincronizarNotificaciones();
 
         return {
             id: visitaCreada.id,

@@ -14,11 +14,41 @@
 <body>
   <div id="navbar"></div>
 
-  <main class="page-content">
-    <!-- Contenido de notificaciones -->
+  <main class="page-content notificaciones-page">
+    <header class="notificaciones-header">
+      <h1>
+        Centro de Notificaciones
+      </h1>
+      <div class="notificaciones-header__badges">
+        <span class="badge-total">Total: <strong id="badge-total">0</strong></span>
+        <span class="badge-no-leidas">No leídas: <strong id="badge-no-leidas">0</strong></span>
+      </div>
+    </header>
+
+    <section id="lista-notificaciones" class="lista-notificaciones"></section>
+    <p id="mensaje-estado" class="mensaje-estado" hidden>No tenés notificaciones pendientes.</p>
   </main>
 
+  <template id="tpl-notificacion">
+    <article class="notif-card">
+      <div class="notif-card__icono" aria-hidden="true"></div>
+      <div class="notif-card__contenido">
+        <div class="notif-card__top">
+          <p class="notif-card__mensaje"></p>
+          <time class="notif-card__fecha"></time>
+        </div>
+        <button type="button" class="notif-card__leer" data-accion="leer">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <circle cx="12" cy="12" r="9"/><path d="M8 12l2.5 2.5L16 9"/>
+          </svg>
+          Marcar como leída
+        </button>
+      </div>
+    </article>
+  </template>
+
   <script src="../../components/navbar.js"></script>
+  <script src="notificaciones.js"></script>
 </body>
 
 </html>

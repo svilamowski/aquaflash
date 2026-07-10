@@ -1,5 +1,6 @@
 import ProductoRepository from '../repositories/producto-repository.js';
 import StockRepository from '../repositories/stock-repository.js';
+import { sincronizarNotificaciones } from './notificacion-reglas-service.js';
 
 export default class ProductoService {
     constructor() {
@@ -28,6 +29,7 @@ export default class ProductoService {
         const cantidad = productoData.cantidad ?? 0;
         const producto = await this.productoRepo.createProducto({ ...productoData, cantidad });
         await this.stockRepo.createStockFabrica(producto.id, cantidad);
+        await sincronizarNotificaciones();
         return producto;
     }
 

@@ -1,5 +1,6 @@
 import StockRepository from '../repositories/stock-repository.js';
 import ProductoRepository from '../repositories/producto-repository.js';
+import { sincronizarNotificaciones } from './notificacion-reglas-service.js';
 
 export default class StockService {
     constructor() {
@@ -41,7 +42,9 @@ export default class StockService {
         const item = fabrica.find((f) => f.producto_id === productoId);
         if (!item) throw new Error('No se encontró stock de fábrica para ese producto');
 
-        return this.stockRepo.updateStockCantidad(productoId, item.cantidad + cantidad);
+        const result = await this.stockRepo.updateStockCantidad(productoId, item.cantidad + cantidad);
+        await sincronizarNotificaciones();
+        return result;
     }
 
     getStockFabrica = async () => {
@@ -57,6 +60,7 @@ export default class StockService {
             throw new Error('La nueva cantidad es obligatoria');
         }
         const returnData = await this.stockRepo.updateStockCantidad(productoId, entity.cantidad);
+        await sincronizarNotificaciones();
         return returnData;
     }
 
@@ -68,6 +72,7 @@ export default class StockService {
             throw new Error('La cantidad a descartar debe ser mayor a 0');
         }
         const returnData = await this.stockRepo.descartarStock(entity.producto_id, entity.cantidad);
+        await sincronizarNotificaciones();
         return returnData;
     }
 }

@@ -42,12 +42,15 @@ const NAVBAR_HTML = `
       </a>
     </li>
     <li>
-      <a href="../notificaciones/notificaciones.html" data-nav="notificaciones">
-        <span class="nav-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
-            <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-            <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-          </svg>
+      <a href="../notificaciones/notificaciones.html" data-nav="notificaciones" class="nav-notificaciones">
+        <span class="nav-icon-wrap">
+          <span class="nav-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+            </svg>
+          </span>
+          <span class="nav-badge" id="nav-notif-badge" hidden></span>
         </span>
         Notificaciones
       </a>
@@ -55,6 +58,57 @@ const NAVBAR_HTML = `
   </ul>
 </nav>
 `;
+
+const NOTIF_CACHE_KEY = 'aquaflash-notif-no-leidas';
+const NOTIF_API = 'http://localhost:3000/api/notificacion/no-leidas';
+
+function mostrarBadge(cantidad) {
+    const badge = document.getElementById('nav-notif-badge');
+    if (!badge) return;
+
+    if (cantidad > 0) {
+        badge.textContent = cantidad > 99 ? '99+' : cantidad;
+        badge.hidden = false;
+    } else {
+        badge.hidden = true;
+    }
+}
+
+function leerCacheNotificaciones() {
+    const guardado = sessionStorage.getItem(NOTIF_CACHE_KEY);
+    if (guardado === null) return null;
+    const cantidad = Number(guardado);
+    return Number.isFinite(cantidad) ? cantidad : null;
+}
+
+function actualizarBadgeNavbar(cantidad) {
+    sessionStorage.setItem(NOTIF_CACHE_KEY, String(cantidad));
+    mostrarBadge(cantidad);
+}
+
+async function cargarBadgeNotificaciones() {
+    try {
+        const res = await fetch(NOTIF_API);
+        if (!res.ok) return;
+        const data = await res.json();
+        const cantidad = Array.isArray(data) ? data.length : 0;
+        actualizarBadgeNavbar(cantidad);
+    } catch {
+        // Si falla el backend, mantener el valor en caché
+    }
+}
+
+function restaurarBadgeDesdeCache() {
+    const cantidad = leerCacheNotificaciones();
+    if (cantidad !== null) {
+        mostrarBadge(cantidad);
+    }
+}
+
+function iniciarActualizacionBadge() {
+    restaurarBadgeDesdeCache();
+    cargarBadgeNotificaciones();
+}
 
 function loadNavbar() {
     const container = document.getElementById('navbar');
@@ -68,6 +122,18 @@ function loadNavbar() {
             link.classList.add('active');
         });
     }
+
+    iniciarActualizacionBadge();
 }
+
+window.actualizarBadgeNavbar = actualizarBadgeNavbar;
+
+window.addEventListener('pageshow', iniciarActualizacionBadge);
+document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+        cargarBadgeNotificaciones();
+    }
+});
+window.addEventListener('focus', cargarBadgeNotificaciones);
 
 loadNavbar();
