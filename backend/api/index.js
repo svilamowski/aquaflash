@@ -1,17 +1,16 @@
 import express from "express";
 import cors from "cors";
-import { supabase } from "./src/database/pool.js";
-import clienteRouter from "./src/controllers/cliente-controller.js";
-import filtroRouter from "./src/controllers/filtro-controller.js";
-import notificacionRouter from "./src/controllers/notificacion-controller.js";
-import productoRouter from "./src/controllers/producto-controller.js";
-import repartidorRouter from "./src/controllers/repartidor-controller.js";
-import stockRouter from "./src/controllers/stock-controller.js";
-import visitaRouter from "./src/controllers/visita-controller.js";
-import estadisticasRouter from "./src/controllers/estadisticas-controller.js";
+import { supabase } from "../src/database/pool.js";
+import clienteRouter from "../src/controllers/cliente-controller.js";
+import filtroRouter from "../src/controllers/filtro-controller.js";
+import notificacionRouter from "../src/controllers/notificacion-controller.js";
+import productoRouter from "../src/controllers/producto-controller.js";
+import repartidorRouter from "../src/controllers/repartidor-controller.js";
+import stockRouter from "../src/controllers/stock-controller.js";
+import visitaRouter from "../src/controllers/visita-controller.js";
+import estadisticasRouter from "../src/controllers/estadisticas-controller.js";
 
 const app = express();
-const port = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(cors());
@@ -40,6 +39,4 @@ app.get("/test-db", async (req, res) => {
     }
 });
 
-app.listen(port, () => {
-    console.log(`Servidor de AquaFlash corriendo en http://localhost:${port}`);
-});
+export default app;

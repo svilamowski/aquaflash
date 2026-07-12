@@ -1,4 +1,6 @@
-const API = 'http://localhost:3000/api';
+const API = location.port === "8080"
+    ? "http://localhost:3000/api"
+    : "https://aquaflash-nine.vercel.app/api";
 
 const filtroPeriodo = document.getElementById('filtro-periodo');
 const filtroRepartidor = document.getElementById('filtro-repartidor');

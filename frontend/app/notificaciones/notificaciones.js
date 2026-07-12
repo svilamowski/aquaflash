@@ -1,4 +1,6 @@
-const API = 'http://localhost:3000/api';
+const API = location.port === "8080"
+    ? "http://localhost:3000/api"
+    : "https://aquaflash-nine.vercel.app/api";
 
 const tpl = document.getElementById('tpl-notificacion');
 const lista = document.getElementById('lista-notificaciones');
