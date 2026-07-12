@@ -4,7 +4,7 @@ const NAVBAR_HTML = `
   <div class="nav-inner">
   <div class="logo">
     <a class="imagen-logo" href="index.html" aria-label="Ir a clientes">
-      <img src="../public/logo.png" alt="Logo AquaFlash">
+      <img src="../images/logo.png" alt="Logo AquaFlash">
     </a>
     <a class="texto-logo" href="index.html">AquaFlash</a>
   </div>
