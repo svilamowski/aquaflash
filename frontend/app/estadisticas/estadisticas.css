@@ -26,11 +26,6 @@
     flex: 1 1 240px;
 }
 
-.estadisticas-header__icono {
-    display: inline-flex;
-    color: #0d6efd;
-}
-
 .estadisticas-header__acciones {
     display: flex;
     align-items: center;

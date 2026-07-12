@@ -446,6 +446,10 @@
     color: #dc2626;
 }
 
+#resumen-saldo[hidden] {
+    display: none !important;
+}
+
 .producto-fila__controles {
     display: flex;
     align-items: center;

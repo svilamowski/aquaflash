@@ -47,8 +47,13 @@ export const createFiltroACliente = async (clienteId, filtroId) => {
         .from('clientes_filtros')
         .insert([{ cliente_id: clienteId, filtro_id: filtroId }])
         .select();
-        
-    if (error) throw new Error('Error al asignar filtro al cliente: ' + error.message);
+
+    if (error) {
+        if (error.code === '23505') {
+            return [{ cliente_id: clienteId, filtro_id: filtroId }];
+        }
+        throw new Error('Error al asignar filtro al cliente: ' + error.message);
+    }
     return data;
 };
 

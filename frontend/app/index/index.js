@@ -6,8 +6,12 @@ const mensaje = document.getElementById('mensaje-estado');
 
 let clientes = [];
 let repartidores = [];
-let filtro = { tipo: 'todos', dia: null };
+let filtrosPersonalizados = [];
+let asignaciones = {};
+let filtro = { tipo: 'todos', dia: null, personalizadoId: null };
 let editandoId = null;
+let editandoFiltroId = null;
+let seleccionModal = new Set();
 
 const modal = document.getElementById('modal-nuevo');
 const modalTitulo = document.getElementById('modal-titulo');
@@ -15,6 +19,15 @@ const formNuevo = document.getElementById('form-nuevo');
 const formError = document.getElementById('form-error');
 const diasVisita = document.getElementById('dias-visita');
 const dispenserToggle = document.getElementById('dispenser-toggle');
+
+const modalFiltro = document.getElementById('modal-filtro');
+const modalFiltroTitulo = document.getElementById('modal-filtro-titulo');
+const formFiltro = document.getElementById('form-filtro');
+const filtroNombre = document.getElementById('filtro-nombre');
+const filtroBusquedaClientes = document.getElementById('filtro-busqueda-clientes');
+const filtroListaClientes = document.getElementById('filtro-lista-clientes');
+const filtroError = document.getElementById('filtro-error');
+const contenedorFiltrosPersonalizados = document.getElementById('filtros-personalizados');
 
 const formatearFrecuencia = (dias) => {
     if (dias.length === 1) return dias[0];
@@ -107,6 +120,14 @@ async function put(ruta, body) {
     return data;
 }
 
+async function del(ruta) {
+    const res = await fetch(`${API}${ruta}`, { method: 'DELETE' });
+    if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || data.message || `Error en ${ruta}`);
+    }
+}
+
 // --- Helpers ---
 const plata = (n) => `$${Number(n).toLocaleString('es-AR')}`;
 
@@ -154,6 +175,134 @@ function crearTarjeta(cliente) {
     return card;
 }
 
+// --- Filtros personalizados ---
+async function cargarAsignacionesFiltros() {
+    asignaciones = {};
+    await Promise.all(filtrosPersonalizados.map(async (f) => {
+        const clientesFiltro = await get(`/filtro/${f.id}/clientes`).catch(() => []);
+        asignaciones[f.id] = new Set((clientesFiltro ?? []).map((c) => c.id));
+    }));
+}
+
+function pintarFiltrosPersonalizados() {
+    contenedorFiltrosPersonalizados.replaceChildren(
+        ...filtrosPersonalizados.map((f) => {
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = 'filtro-pill filtro-pill--custom';
+            btn.dataset.filtro = 'personalizado';
+            btn.dataset.filtroId = f.id;
+            if (filtro.tipo === 'personalizado' && filtro.personalizadoId === f.id) {
+                btn.classList.add('active');
+            }
+
+            btn.innerHTML = `
+                <span class="filtro-pill__nombre">${f.nombre}</span>
+                <span class="filtro-pill__editar" data-accion="editar-filtro" title="Administrar clientes" aria-hidden="true">✎</span>
+            `;
+            return btn;
+        })
+    );
+}
+
+function pintarListaClientesFiltro() {
+    const texto = filtroBusquedaClientes.value.trim().toLowerCase();
+
+    const visibles = [...clientes]
+        .sort((a, b) => a.nombre.localeCompare(b.nombre, 'es'))
+        .filter((c) => {
+            if (!texto) return true;
+            return c.nombre.toLowerCase().includes(texto) || c.direccion.toLowerCase().includes(texto);
+        });
+
+    if (!visibles.length) {
+        filtroListaClientes.innerHTML = '<p class="filtro-cliente-item__direccion">No hay clientes para mostrar.</p>';
+        return;
+    }
+
+    filtroListaClientes.replaceChildren(...visibles.map((c) => {
+        const label = document.createElement('label');
+        label.className = 'filtro-cliente-item';
+        label.innerHTML = `
+            <input type="checkbox" value="${c.id}" ${seleccionModal.has(c.id) ? 'checked' : ''}>
+            <span class="filtro-cliente-item__info">
+                <span class="filtro-cliente-item__nombre">${c.nombre}</span>
+                <span class="filtro-cliente-item__direccion">${c.direccion}</span>
+            </span>
+        `;
+        return label;
+    }));
+}
+
+function abrirModalFiltro(filtroId = null) {
+    editandoFiltroId = filtroId;
+    filtroError.hidden = true;
+    filtroBusquedaClientes.value = '';
+
+    if (filtroId) {
+        const filtroActual = filtrosPersonalizados.find((f) => f.id === filtroId);
+        modalFiltroTitulo.textContent = 'Administrar filtro';
+        filtroNombre.value = filtroActual?.nombre ?? '';
+        filtroNombre.readOnly = true;
+        seleccionModal = new Set(asignaciones[filtroId] ?? []);
+    } else {
+        modalFiltroTitulo.textContent = 'Nuevo filtro';
+        filtroNombre.value = '';
+        filtroNombre.readOnly = false;
+        editandoFiltroId = 'nuevo';
+        seleccionModal = new Set();
+    }
+
+    pintarListaClientesFiltro();
+    modalFiltro.hidden = false;
+}
+
+function cerrarModalFiltro() {
+    modalFiltro.hidden = true;
+    editandoFiltroId = null;
+    seleccionModal = new Set();
+    formFiltro.reset();
+}
+
+function idsSeleccionadosEnModal() {
+    return [...seleccionModal];
+}
+
+async function sincronizarAsignaciones(filtroId, seleccionados) {
+    const actual = asignaciones[filtroId] ?? new Set();
+    const nuevos = new Set(seleccionados);
+
+    const agregar = [...nuevos].filter((id) => !actual.has(id));
+    const quitar = [...actual].filter((id) => !nuevos.has(id));
+
+    await Promise.all([
+        ...agregar.map((id) => post(`/filtro/${filtroId}/cliente/${id}`)),
+        ...quitar.map((id) => del(`/filtro/${filtroId}/cliente/${id}/delete`)),
+    ]);
+
+    asignaciones[filtroId] = nuevos;
+}
+
+function activarFiltroPill(pill) {
+    document.querySelectorAll('.filtro-pill.active').forEach((p) => p.classList.remove('active'));
+    pill.classList.add('active');
+
+    if (pill.dataset.filtro === 'personalizado') {
+        filtro = {
+            tipo: 'personalizado',
+            dia: null,
+            personalizadoId: Number(pill.dataset.filtroId),
+        };
+    } else {
+        filtro = {
+            tipo: pill.dataset.filtro,
+            dia: pill.dataset.dia ?? null,
+            personalizadoId: null,
+        };
+    }
+    pintar();
+}
+
 // --- Filtros ---
 function clientesVisibles() {
     const texto = document.getElementById('busqueda').value.trim().toLowerCase();
@@ -161,6 +310,10 @@ function clientesVisibles() {
     const repartidor = document.getElementById('filtro-repartidor').value;
 
     return clientes.filter((c) => {
+        if (filtro.tipo === 'personalizado' && filtro.personalizadoId) {
+            const ids = asignaciones[filtro.personalizadoId];
+            if (!ids?.has(c.id)) return false;
+        }
         if (texto && !c.nombre.toLowerCase().includes(texto) && !c.direccion.toLowerCase().includes(texto)) return false;
         if (filtro.tipo === 'dia' && filtro.dia && !c.frecuencia_visitas?.includes(filtro.dia)) return false;
         if (deuda === 'con-deuda' && c.deuda <= 0) return false;
@@ -181,13 +334,75 @@ function pintar() {
 }
 
 // --- Eventos ---
-document.querySelectorAll('.filtro-pill').forEach((pill) => {
-    pill.addEventListener('click', () => {
-        document.querySelector('.filtro-pill.active')?.classList.remove('active');
-        pill.classList.add('active');
-        filtro = { tipo: pill.dataset.filtro, dia: pill.dataset.dia ?? null };
+document.getElementById('filtros').addEventListener('click', (e) => {
+    if (e.target.closest('#btn-nuevo-filtro')) {
+        abrirModalFiltro();
+        return;
+    }
+
+    const editar = e.target.closest('[data-accion="editar-filtro"]');
+    if (editar) {
+        e.stopPropagation();
+        const pill = editar.closest('.filtro-pill--custom');
+        if (pill) abrirModalFiltro(Number(pill.dataset.filtroId));
+        return;
+    }
+
+    const pill = e.target.closest('.filtro-pill:not(.filtro-pill--agregar)');
+    if (!pill) return;
+    activarFiltroPill(pill);
+});
+
+modalFiltro.querySelectorAll('[data-cerrar-filtro]').forEach((el) => {
+    el.addEventListener('click', cerrarModalFiltro);
+});
+
+filtroBusquedaClientes.addEventListener('input', pintarListaClientesFiltro);
+
+filtroListaClientes.addEventListener('change', (e) => {
+    if (e.target.type !== 'checkbox') return;
+    const id = Number(e.target.value);
+    if (e.target.checked) seleccionModal.add(id);
+    else seleccionModal.delete(id);
+});
+
+formFiltro.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    filtroError.hidden = true;
+
+    const seleccionados = idsSeleccionadosEnModal();
+
+    try {
+        if (editandoFiltroId === 'nuevo') {
+            const nombre = filtroNombre.value.trim();
+            if (!nombre) {
+                filtroError.textContent = 'El nombre del filtro es obligatorio';
+                filtroError.hidden = false;
+                return;
+            }
+
+            const creado = await post('/filtro/create', { nombre });
+            const filtroNuevo = Array.isArray(creado) ? creado[0] : creado;
+            filtrosPersonalizados.push(filtroNuevo);
+            await sincronizarAsignaciones(filtroNuevo.id, seleccionados);
+            filtro = { tipo: 'personalizado', dia: null, personalizadoId: filtroNuevo.id };
+        } else {
+            await sincronizarAsignaciones(editandoFiltroId, seleccionados);
+        }
+
+        pintarFiltrosPersonalizados();
+        document.querySelectorAll('.filtro-pill.active').forEach((p) => p.classList.remove('active'));
+        const pillActivo = contenedorFiltrosPersonalizados.querySelector(
+            `[data-filtro-id="${filtro.personalizadoId}"]`
+        );
+        pillActivo?.classList.add('active');
+
+        cerrarModalFiltro();
         pintar();
-    });
+    } catch (error) {
+        filtroError.textContent = error.message || 'Error al guardar el filtro';
+        filtroError.hidden = false;
+    }
 });
 
 ['busqueda', 'filtro-deuda', 'filtro-repartidor'].forEach((id) => {
@@ -293,13 +508,18 @@ formNuevo.addEventListener('submit', async (e) => {
 // --- Inicio ---
 async function iniciar() {
     try {
-        [repartidores, clientes] = await Promise.all([
+        [repartidores, clientes, filtrosPersonalizados] = await Promise.all([
             get('/repartidor'),
             get('/cliente').then((datos) => Promise.all(datos.map(async (c) => ({
                 ...c,
                 stock: await get(`/cliente/${c.id}/stock`).catch(() => []),
             })))),
+            get('/filtro').catch(() => []),
         ]);
+
+        if (!Array.isArray(filtrosPersonalizados)) filtrosPersonalizados = [];
+        await cargarAsignacionesFiltros();
+        pintarFiltrosPersonalizados();
 
         const selectFiltro = document.getElementById('filtro-repartidor');
         const selectForm = document.getElementById('form-repartidor');

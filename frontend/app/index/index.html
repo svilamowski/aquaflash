@@ -41,6 +41,8 @@
       <select id="filtro-repartidor" class="filtro-select">
         <option value="">Repartidor</option>
       </select>
+      <div id="filtros-personalizados" class="filtros-personalizados"></div>
+      <button type="button" class="filtro-pill filtro-pill--agregar" id="btn-nuevo-filtro" title="Nuevo filtro personalizado">+</button>
     </section>
 
     <section id="lista-clientes" class="lista-clientes"></section>
@@ -95,6 +97,32 @@
         <div class="modal__acciones">
           <button type="button" class="btn-cancelar" data-cerrar>Cancelar</button>
           <button type="submit" class="btn-guardar">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <div id="modal-filtro" class="modal" hidden>
+    <div class="modal__fondo" data-cerrar-filtro></div>
+    <div class="modal__caja modal__caja--filtro">
+      <h2 id="modal-filtro-titulo">Nuevo filtro</h2>
+      <form id="form-filtro" class="form-nuevo">
+        <label>
+          Nombre del filtro
+          <input type="text" id="filtro-nombre" name="nombre" required placeholder="Ej: Zona Sur VIP">
+        </label>
+
+        <div class="form-grupo">
+          <span class="form-grupo__label">Clientes incluidos</span>
+          <input type="search" id="filtro-busqueda-clientes" class="busqueda-input busqueda-input--modal"
+            placeholder="Buscar cliente...">
+          <div id="filtro-lista-clientes" class="filtro-lista-clientes"></div>
+        </div>
+
+        <p id="filtro-error" class="form-error" hidden></p>
+        <div class="modal__acciones">
+          <button type="button" class="btn-cancelar" data-cerrar-filtro>Cancelar</button>
+          <button type="submit" class="btn-guardar">Guardar filtro</button>
         </div>
       </form>
     </div>

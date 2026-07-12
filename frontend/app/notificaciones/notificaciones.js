@@ -51,7 +51,9 @@ const formatearFecha = (fecha) => {
     return `${fechaStr} ${horaStr}`;
 };
 
-const contarNoLeidas = () => notificaciones.filter((n) => !n.leido).length;
+const esLeida = (notif) => notif.leido === true || notif.leido === 1 || notif.leido === 'true';
+
+const contarNoLeidas = () => notificaciones.filter((n) => !esLeida(n)).length;
 
 async function get(ruta) {
     const res = await fetch(`${API}${ruta}`);
@@ -75,7 +77,7 @@ function actualizarBadges() {
 function crearTarjeta(notif) {
     const tipo = clasificar(notif.mensaje);
     const esPromo = tipo === 'promocion';
-    const leida = Boolean(notif.leido);
+    const leida = esLeida(notif);
     const card = tpl.content.cloneNode(true).querySelector('.notif-card');
 
     card.classList.add(leida ? 'notif-card--leida' : (esPromo ? 'notif-card--promocion' : 'notif-card--alerta'));
@@ -89,7 +91,7 @@ function crearTarjeta(notif) {
 
     const btnLeer = card.querySelector('[data-accion="leer"]');
     if (leida) {
-        btnLeer.hidden = true;
+        btnLeer.remove();
     } else {
         btnLeer.dataset.id = notif.id;
     }
@@ -111,9 +113,12 @@ lista.addEventListener('click', async (e) => {
     if (!id) return;
 
     try {
-        await put(`/notificacion/${id}/marcar-leida`);
+        const actualizado = await put(`/notificacion/${id}/marcar-leida`);
         const notif = notificaciones.find((n) => n.id == id);
-        if (notif) notif.leido = true;
+        if (notif) {
+            const datos = Array.isArray(actualizado) ? actualizado[0] : actualizado;
+            notif.leido = datos?.leido ?? true;
+        }
         pintar();
     } catch (error) {
         alert(error.message || 'Error al marcar como leída');

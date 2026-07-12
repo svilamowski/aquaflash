@@ -113,6 +113,18 @@ function pintarCliente() {
     document.getElementById('btn-retirar-dispenser').hidden = !tieneDispenserEnStock(stockCliente);
 }
 
+function aplicarVentaAlCliente(montoTotal, montoPagado) {
+    if (!cliente || (montoTotal <= 0 && montoPagado <= 0)) return;
+
+    const hoy = new Date().toISOString().split('T')[0];
+    cliente.deuda = Math.max(0, Number(cliente.deuda || 0) + montoTotal - montoPagado);
+
+    if (montoPagado > 0) cliente.ultimo_pago = hoy;
+    if (montoTotal > 0 || montoPagado > 0) cliente.ultima_compra = hoy;
+
+    pintarCliente();
+}
+
 function badgeVisita(visita) {
     if (!visita.compro) {
         return '<span class="historial-badge historial-badge--no-compra">No compró</span>';
@@ -205,13 +217,16 @@ function actualizarTotales() {
 
     const pagado = Number(document.getElementById('monto-pagado').value) || 0;
     const saldoEl = document.getElementById('resumen-saldo');
-    const diferencia = total - pagado;
+    const saldoMontoEl = document.getElementById('monto-saldo');
+    const deudaActual = Number(cliente?.deuda || 0);
+    const deudaResultante = Math.max(0, deudaActual + total - pagado);
 
-    if (total > 0 && diferencia > 0) {
+    if (total > 0 || pagado > 0) {
         saldoEl.hidden = false;
-        document.getElementById('monto-saldo').textContent = plata(diferencia);
+        saldoMontoEl.textContent = plata(deudaResultante);
     } else {
         saldoEl.hidden = true;
+        saldoMontoEl.textContent = plata(0);
     }
 }
 
@@ -295,6 +310,7 @@ document.getElementById('productos-form').addEventListener('click', (e) => {
 });
 
 document.getElementById('monto-pagado').addEventListener('input', actualizarTotales);
+document.getElementById('monto-pagado').addEventListener('change', actualizarTotales);
 
 // --- Notas ---
 function pintarNotaVista() {
@@ -380,6 +396,7 @@ document.getElementById('btn-guardar-movimiento').addEventListener('click', asyn
         });
 
         document.getElementById('monto-pagado').value = '0';
+        aplicarVentaAlCliente(montoTotal, montoPagado);
         await recargarDatos();
         pintarFormProductos();
     } catch (error) {

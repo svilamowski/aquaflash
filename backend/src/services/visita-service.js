@@ -125,16 +125,23 @@ export default class VisitaService {
             await this.actualizarStockCliente(cabecera.cliente_id, ventasArray);
         }
 
+        const montoPagado = cabecera.monto_pagado ?? 0;
+
         const huboEntrega = productos?.some((p) => (p.cantidad_entregada ?? 0) > 0);
         const actualizacionCliente = { id: cabecera.cliente_id };
 
         if (huboEntrega || cabecera.compro) {
             actualizacionCliente.ultima_compra = fechaValida.toISOString().split('T')[0];
         }
-        if ((cabecera.monto_pagado ?? 0) > 0) {
+        if (montoPagado > 0) {
             actualizacionCliente.ultimo_pago = fechaValida.toISOString().split('T')[0];
         }
-        if (actualizacionCliente.ultima_compra || actualizacionCliente.ultimo_pago) {
+        if (montoTotalVenta > 0 || montoPagado > 0) {
+            const cliente = await this.clienteRepo.getClienteById(cabecera.cliente_id);
+            const deudaActual = Number(cliente.deuda || 0);
+            actualizacionCliente.deuda = Math.max(0, deudaActual + montoTotalVenta - montoPagado);
+        }
+        if (Object.keys(actualizacionCliente).length > 1) {
             await this.clienteRepo.alterCliente(actualizacionCliente);
         }
 
