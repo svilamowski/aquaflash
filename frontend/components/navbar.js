@@ -3,10 +3,10 @@ const NAVBAR_HTML = `
 <nav>
   <div class="nav-inner">
   <div class="logo">
-    <a class="imagen-logo" href="../index/index.html" aria-label="Ir a clientes">
-      <img src="../../public/logo.png" alt="Logo AquaFlash">
+    <a class="imagen-logo" href="index.html" aria-label="Ir a clientes">
+      <img src="../public/logo.png" alt="Logo AquaFlash">
     </a>
-    <a class="texto-logo" href="../index/index.html">AquaFlash</a>
+    <a class="texto-logo" href="index.html">AquaFlash</a>
   </div>
   <div class="nav-utils">
     <button type="button" class="nav-btn-tema" id="nav-btn-tema" aria-label="Cambiar tema">
@@ -24,7 +24,7 @@ const NAVBAR_HTML = `
     </button>
     <ul>
     <li>
-      <a href="../estadisticas/estadisticas.html" data-nav="estadisticas">
+      <a href="estadisticas.html" data-nav="estadisticas">
         <span class="nav-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-6"/><path d="M22 20V8"/>
@@ -34,7 +34,7 @@ const NAVBAR_HTML = `
       </a>
     </li>
     <li>
-      <a href="../promocion/promocion.html" data-nav="promocion">
+      <a href="promocion.html" data-nav="promocion">
         <span class="nav-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
             <rect x="3" y="8" width="18" height="13" rx="1"/>
@@ -46,7 +46,7 @@ const NAVBAR_HTML = `
       </a>
     </li>
     <li>
-      <a href="../stock/stock.html" data-nav="stock">
+      <a href="stock.html" data-nav="stock">
         <span class="nav-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
             <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3z"/>
@@ -57,7 +57,7 @@ const NAVBAR_HTML = `
       </a>
     </li>
     <li>
-      <a href="../notificaciones/notificaciones.html" data-nav="notificaciones" class="nav-notificaciones">
+      <a href="notificaciones.html" data-nav="notificaciones" class="nav-notificaciones">
         <span class="nav-icon-wrap">
           <span class="nav-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
@@ -77,7 +77,9 @@ const NAVBAR_HTML = `
 `;
 
 const NOTIF_CACHE_KEY = 'aquaflash-notif-no-leidas';
-const NOTIF_API = 'http://localhost:3000/api/notificacion/no-leidas';
+const NOTIF_API = location.port === "8080"
+    ? "http://localhost:3000/api/notificacion/no-leidas"
+    : "https://aquaflash-nine.vercel.app/api/notificacion/no-leidas";
 
 function mostrarBadge(cantidad) {
     const badge = document.getElementById('nav-notif-badge');

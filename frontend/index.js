@@ -158,7 +158,7 @@ function crearTarjeta(cliente) {
 
     const nombreLink = card.querySelector('.tarjeta-cliente__nombre');
     nombreLink.textContent = cliente.nombre;
-    nombreLink.href = `../cliente/cliente.html?id=${cliente.id}`;
+    nombreLink.href = `cliente.html?id=${cliente.id}`;
 
     deuda.textContent = `Deuda: ${plata(cliente.deuda)}`;
     deuda.classList.add(cliente.deuda > 0 ? 'tarjeta-cliente__deuda--alerta' : 'tarjeta-cliente__deuda--ok');

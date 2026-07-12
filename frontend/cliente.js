@@ -498,7 +498,7 @@ document.getElementById('btn-baja').addEventListener('click', async () => {
 
     try {
         await fetch(`${API}/cliente/${clienteId}/delete`, { method: 'DELETE' });
-        window.location.href = '../index/index.html';
+        window.location.href = 'index.html';
     } catch {
         alert('Error al eliminar el cliente');
     }
