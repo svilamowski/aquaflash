@@ -1,3 +1,4 @@
+<img width="1868" height="966" alt="Screenshot From 2026-07-14 13-48-49" src="https://github.com/user-attachments/assets/d00bd554-975e-4bfd-8e98-09036e4c6b87" />
 # AquaFlash
 
 AquaFlash es una aplicación web para la gestión de clientes, repartidores, stock, promociones y estadísticas de una distribuidora de agua, permitiendo un seguimiento eficiente de las asignaciones diarias.
