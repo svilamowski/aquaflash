@@ -69,10 +69,43 @@ export const deleteFiltroDeCliente = async (clienteId, filtroId) => {
     return true;
 };
 
+export const alterFiltro = async (filtroId, filtroData) => {
+    const { data, error } = await pool
+        .from('filtros_personalizados')
+        .update({ nombre: filtroData.nombre })
+        .eq('id', filtroId)
+        .select()
+        .single();
+
+    if (error) throw new Error('Error al actualizar el filtro: ' + error.message);
+    return data;
+};
+
+export const deleteFiltro = async (filtroId) => {
+    const { error: errAsignaciones } = await pool
+        .from('clientes_filtros')
+        .delete()
+        .eq('filtro_id', filtroId);
+
+    if (errAsignaciones) {
+        throw new Error('Error al limpiar asignaciones del filtro: ' + errAsignaciones.message);
+    }
+
+    const { error } = await pool
+        .from('filtros_personalizados')
+        .delete()
+        .eq('id', filtroId);
+
+    if (error) throw new Error('Error al eliminar el filtro: ' + error.message);
+    return true;
+};
+
 export default class FiltroRepository {
     getClientesByFiltro = getClientesByFiltro;
     getAllFiltros = getAllFiltros;
     createFiltro = createFiltro;
     createFiltroACliente = createFiltroACliente;
     deleteFiltroDeCliente = deleteFiltroDeCliente;
+    alterFiltro = alterFiltro;
+    deleteFiltro = deleteFiltro;
 }

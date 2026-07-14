@@ -101,7 +101,8 @@
     white-space: nowrap;
 }
 
-.filtro-pill__editar {
+.filtro-pill__editar,
+.filtro-pill__borrar {
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -114,9 +115,20 @@
     flex-shrink: 0;
 }
 
-.filtro-pill__editar:hover {
+.filtro-pill__borrar svg {
+    width: 12px;
+    height: 12px;
+}
+
+.filtro-pill__editar:hover,
+.filtro-pill__borrar:hover {
     opacity: 1;
     background: rgba(255, 255, 255, 0.2);
+}
+
+.filtro-pill:not(.active) .filtro-pill__borrar:hover {
+    color: #b91c1c;
+    background: rgba(185, 28, 28, 0.12);
 }
 
 .filtro-pill--agregar {

@@ -47,4 +47,20 @@ export default class FiltroService {
         const success = await this.filtroRepo.deleteFiltroDeCliente(clienteId, filtroId);
         return success;
     }
+
+    alterFiltro = async (filtroId, entity) => {
+        if (!filtroId) throw new Error('El ID del filtro es obligatorio');
+
+        const nombre = entity.nombre ?? entity.nombreFiltro;
+        if (!nombre || nombre.trim() === '') {
+            throw new Error('El nombre del filtro no puede estar vacío');
+        }
+
+        return this.filtroRepo.alterFiltro(filtroId, { nombre: nombre.trim() });
+    }
+
+    deleteFiltro = async (filtroId) => {
+        if (!filtroId) throw new Error('El ID del filtro es obligatorio para eliminarlo');
+        return this.filtroRepo.deleteFiltro(filtroId);
+    }
 }

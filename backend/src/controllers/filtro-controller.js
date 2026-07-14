@@ -65,4 +65,26 @@ router.delete('/:filtroId/cliente/:clienteId/delete', async (req, res) => {
     }
 });
 
+// Editar nombre de un filtro
+router.put('/:id/alter', async (req, res) => {
+    try {
+        const filtroId = parseInt(req.params.id);
+        const returnData = await svc.alterFiltro(filtroId, req.body);
+        res.status(200).send(returnData);
+    } catch (error) {
+        res.status(400).json({ message: 'Error al actualizar el filtro', error: error.message });
+    }
+});
+
+// Eliminar un filtro
+router.delete('/:id/delete', async (req, res) => {
+    try {
+        const filtroId = parseInt(req.params.id);
+        const success = await svc.deleteFiltro(filtroId);
+        res.status(200).send(success);
+    } catch (error) {
+        res.status(400).json({ message: 'Error al eliminar el filtro', error: error.message });
+    }
+});
+
 export default router;
