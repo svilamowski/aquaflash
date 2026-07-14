@@ -1,4 +1,3 @@
-<img width="1868" height="966" alt="Screenshot From 2026-07-14 13-48-49" src="https://github.com/user-attachments/assets/d00bd554-975e-4bfd-8e98-09036e4c6b87" />
 # AquaFlash
 
 AquaFlash es una aplicación web para la gestión de clientes, repartidores, stock, promociones y estadísticas de una distribuidora de agua, permitiendo un seguimiento eficiente de las asignaciones diarias.
@@ -64,3 +63,8 @@ make stop-docker
 *¿Qué hace?* Frena y destruye los contenedores de Docker asociados al proyecto de manera limpia.
 
 **"Variables de Entorno"** es necesario crear un archivo `.env` con las credenciales de Supabase.
+<img width="1868" height="966" alt="Screenshot From 2026-07-14 13-48-49" src="https://github.com/user-attachments/assets/d00bd554-975e-4bfd-8e98-09036e4c6b87" />
+<img width="1868" height="966" alt="Screenshot From 2026-07-14 13-51-35" src="https://github.com/user-attachments/assets/83b5f0ea-87a3-4c0a-8a1b-8b58e87a6a42" />
+<img width="1868" height="966" alt="Screenshot From 2026-07-14 13-51-40" src="https://github.com/user-attachments/assets/7a0b709f-97b2-4fef-ba8d-f9e28cfa1fd5" />
+<img width="1868" height="966" alt="Screenshot From 2026-07-14 13-51-45" src="https://github.com/user-attachments/assets/5a0783e1-5853-43d5-ad50-02a9605bbf70" />
+<img width="1868" height="966" alt="Screenshot From 2026-07-14 13-51-49" src="https://github.com/user-attachments/assets/058a7237-7acb-4b9b-91e5-d3250c35250a" />
