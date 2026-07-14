@@ -200,7 +200,12 @@ function pintarFiltrosPersonalizados() {
 
             btn.innerHTML = `
                 <span class="filtro-pill__nombre">${f.nombre}</span>
-                <span class="filtro-pill__editar" data-accion="editar-filtro" title="Administrar clientes" aria-hidden="true">✎</span>
+                <span class="filtro-pill__editar" data-accion="editar-filtro" title="Editar filtro" aria-hidden="true">✎</span>
+                <span class="filtro-pill__borrar" data-accion="borrar-filtro" title="Eliminar filtro" aria-label="Eliminar filtro">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/>
+                    </svg>
+                </span>
             `;
             return btn;
         })
@@ -243,9 +248,9 @@ function abrirModalFiltro(filtroId = null) {
 
     if (filtroId) {
         const filtroActual = filtrosPersonalizados.find((f) => f.id === filtroId);
-        modalFiltroTitulo.textContent = 'Administrar filtro';
+        modalFiltroTitulo.textContent = 'Editar filtro';
         filtroNombre.value = filtroActual?.nombre ?? '';
-        filtroNombre.readOnly = true;
+        filtroNombre.readOnly = false;
         seleccionModal = new Set(asignaciones[filtroId] ?? []);
     } else {
         modalFiltroTitulo.textContent = 'Nuevo filtro';
@@ -342,6 +347,31 @@ document.getElementById('filtros').addEventListener('click', (e) => {
         return;
     }
 
+    const borrar = e.target.closest('[data-accion="borrar-filtro"]');
+    if (borrar) {
+        e.stopPropagation();
+        const pill = borrar.closest('.filtro-pill--custom');
+        if (!pill) return;
+        const id = Number(pill.dataset.filtroId);
+        const filtroActual = filtrosPersonalizados.find((f) => f.id === id);
+        if (!confirm(`¿Eliminar el filtro "${filtroActual?.nombre ?? ''}"?`)) return;
+
+        del(`/filtro/${id}/delete`)
+            .then(() => {
+                filtrosPersonalizados = filtrosPersonalizados.filter((f) => f.id !== id);
+                delete asignaciones[id];
+                if (filtro.tipo === 'personalizado' && filtro.personalizadoId === id) {
+                    filtro = { tipo: 'todos', dia: null, personalizadoId: null };
+                    document.querySelectorAll('.filtro-pill.active').forEach((p) => p.classList.remove('active'));
+                    document.querySelector('.filtro-pill[data-filtro="todos"]')?.classList.add('active');
+                }
+                pintarFiltrosPersonalizados();
+                pintar();
+            })
+            .catch((error) => alert(error.message || 'Error al eliminar el filtro'));
+        return;
+    }
+
     const editar = e.target.closest('[data-accion="editar-filtro"]');
     if (editar) {
         e.stopPropagation();
@@ -373,10 +403,10 @@ formFiltro.addEventListener('submit', async (e) => {
     filtroError.hidden = true;
 
     const seleccionados = idsSeleccionadosEnModal();
+    const nombre = filtroNombre.value.trim();
 
     try {
         if (editandoFiltroId === 'nuevo') {
-            const nombre = filtroNombre.value.trim();
             if (!nombre) {
                 filtroError.textContent = 'El nombre del filtro es obligatorio';
                 filtroError.hidden = false;
@@ -389,7 +419,23 @@ formFiltro.addEventListener('submit', async (e) => {
             await sincronizarAsignaciones(filtroNuevo.id, seleccionados);
             filtro = { tipo: 'personalizado', dia: null, personalizadoId: filtroNuevo.id };
         } else {
+            if (!nombre) {
+                filtroError.textContent = 'El nombre del filtro es obligatorio';
+                filtroError.hidden = false;
+                return;
+            }
+
+            const actualizado = await put(`/filtro/${editandoFiltroId}/alter`, { nombre });
+            const filtroEditado = Array.isArray(actualizado) ? actualizado[0] : actualizado;
+            const idx = filtrosPersonalizados.findIndex((f) => f.id === editandoFiltroId);
+            if (idx !== -1) {
+                filtrosPersonalizados[idx] = {
+                    ...filtrosPersonalizados[idx],
+                    nombre: filtroEditado?.nombre ?? nombre,
+                };
+            }
             await sincronizarAsignaciones(editandoFiltroId, seleccionados);
+            filtro = { tipo: 'personalizado', dia: null, personalizadoId: editandoFiltroId };
         }
 
         pintarFiltrosPersonalizados();

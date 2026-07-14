@@ -42,14 +42,24 @@ async function put(ruta, body) {
     return data;
 }
 
+async function del(ruta) {
+    const res = await fetch(`${API}${ruta}`, { method: 'DELETE' });
+    if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error || data.message || `Error en ${ruta}`);
+    }
+}
+
 function crearTarjeta(item) {
     const card = tpl.content.cloneNode(true).querySelector('.producto-card');
 
+    card.dataset.id = item.id;
     card.querySelector('.producto-card__nombre').textContent = item.nombre;
     card.querySelector('.producto-card__total-numero').textContent = item.total;
     card.querySelector('.producto-card__fabrica').textContent = item.en_fabrica;
     card.querySelector('.producto-card__casas').textContent = item.en_casas;
     card.querySelector('.producto-card__min-valor').textContent = item.cantidad_minima_fabrica;
+    card.querySelector('[data-accion="borrar"]').dataset.id = item.id;
 
     return card;
 }
@@ -154,6 +164,22 @@ document.getElementById('btn-descartar').addEventListener('click', async () => {
         await recargar();
     } catch (error) {
         mostrarAjusteError(error.message);
+    }
+});
+
+lista.addEventListener('click', async (e) => {
+    const btn = e.target.closest('[data-accion="borrar"]');
+    if (!btn) return;
+
+    const producto = productos.find((p) => p.id == btn.dataset.id);
+    const nombre = producto?.nombre ?? 'este producto';
+    if (!confirm(`¿Eliminar "${nombre}"? Se borrará también su stock.`)) return;
+
+    try {
+        await del(`/producto/${btn.dataset.id}/delete`);
+        await recargar();
+    } catch (error) {
+        alert(error.message || 'Error al eliminar el producto');
     }
 });
 

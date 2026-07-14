@@ -91,7 +91,14 @@
 
   <template id="tpl-producto">
     <article class="producto-card">
-      <h3 class="producto-card__nombre"></h3>
+      <div class="producto-card__header">
+        <h3 class="producto-card__nombre"></h3>
+        <button type="button" class="producto-card__borrar" data-accion="borrar" title="Eliminar producto" aria-label="Eliminar producto">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <path d="M3 6h18"/><path d="M8 6V4h8v2"/><path d="M6 6l1 14h10l1-14"/>
+          </svg>
+        </button>
+      </div>
       <div class="producto-card__total">
         <span class="producto-card__total-label">STOCK TOTAL DEL SISTEMA</span>
         <span class="producto-card__total-numero"></span>
