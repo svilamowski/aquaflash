@@ -82,6 +82,7 @@ const NOTIF_API = location.port === "8080"
     : "https://aquaflash-nine.vercel.app/api/notificacion/no-leidas";
 
 function mostrarBadge(cantidad) {
+    // Muestra u oculta el número de no leídas en el icono del navbar.
     const badge = document.getElementById('nav-notif-badge');
     if (!badge) return;
 
@@ -94,6 +95,7 @@ function mostrarBadge(cantidad) {
 }
 
 function leerCacheNotificaciones() {
+    // Lee de sessionStorage cuántas no leídas había.
     const guardado = sessionStorage.getItem(NOTIF_CACHE_KEY);
     if (guardado === null) return null;
     const cantidad = Number(guardado);
@@ -101,11 +103,13 @@ function leerCacheNotificaciones() {
 }
 
 function actualizarBadgeNavbar(cantidad) {
+    // Guarda la cantidad en caché y actualiza el badge.
     sessionStorage.setItem(NOTIF_CACHE_KEY, String(cantidad));
     mostrarBadge(cantidad);
 }
 
 async function cargarBadgeNotificaciones() {
+    // Consulta al API las no leídas y actualiza el badge.
     try {
         const res = await fetch(NOTIF_API);
         if (!res.ok) return;
@@ -118,6 +122,7 @@ async function cargarBadgeNotificaciones() {
 }
 
 function restaurarBadgeDesdeCache() {
+    // Restaura el badge con el valor cacheado (antes de que llegue el API).
     const cantidad = leerCacheNotificaciones();
     if (cantidad !== null) {
         mostrarBadge(cantidad);
@@ -125,11 +130,13 @@ function restaurarBadgeDesdeCache() {
 }
 
 function iniciarActualizacionBadge() {
+    // Muestra caché y luego pide el valor real al API.
     restaurarBadgeDesdeCache();
     cargarBadgeNotificaciones();
 }
 
 function loadNavbar() {
+    // Inserta el HTML del navbar y activa tema + badge.
     const container = document.getElementById('navbar');
     if (!container) return;
 

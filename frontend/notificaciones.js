@@ -30,6 +30,7 @@ const ICONOS = {
 };
 
 const clasificar = (mensaje) => {
+    // Clasifica el tipo de notificación según el texto del mensaje.
     const m = mensaje.toLowerCase();
     if (m.includes('promoc') || m.includes('retirar')) return 'promocion';
     if (m.includes('debe más') || m.includes('deuda')) return 'deuda';
@@ -39,6 +40,7 @@ const clasificar = (mensaje) => {
 };
 
 const formatearFecha = (fecha) => {
+    // Formatea fecha y hora de la notificación.
     const d = new Date(fecha);
     const fechaStr = d.toLocaleDateString('es-AR', {
         day: '2-digit',
@@ -54,16 +56,20 @@ const formatearFecha = (fecha) => {
 };
 
 const esLeida = (notif) => notif.leido === true || notif.leido === 1 || notif.leido === 'true';
+// Indica si la notificación ya fue leída.
 
 const contarNoLeidas = () => notificaciones.filter((n) => !esLeida(n)).length;
+// Cuenta cuántas notificaciones no leídas hay.
 
 async function get(ruta) {
+    // GET al API y devuelve JSON.
     const res = await fetch(`${API}${ruta}`);
     if (!res.ok) throw new Error(`Error en ${ruta}`);
     return res.json();
 }
 
 async function put(ruta) {
+    // PUT a la API (marcar leída, etc.).
     const res = await fetch(`${API}${ruta}`, { method: 'PUT' });
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || data.message);
@@ -71,44 +77,47 @@ async function put(ruta) {
 }
 
 function actualizarBadges() {
+    // Actualiza contadores de total y no leídas (y el badge del navbar).
     badgeTotal.textContent = notificaciones.length;
     badgeNoLeidas.textContent = contarNoLeidas();
     window.actualizarBadgeNavbar?.(contarNoLeidas());
 }
 
 function crearTarjeta(notif) {
+    // Arma la tarjeta HTML de una notificación.
     const tipo = clasificar(notif.mensaje);
     const esPromo = tipo === 'promocion';
     const leida = esLeida(notif);
-    const card = tpl.content.cloneNode(true).querySelector('.notif-card');
+    const card = tpl.content.cloneNode(true).querySelector('.notif-card'); // Se clona el template de la tarjeta.
 
-    card.classList.add(leida ? 'notif-card--leida' : (esPromo ? 'notif-card--promocion' : 'notif-card--alerta'));
-    card.dataset.id = notif.id;
+    card.classList.add(leida ? 'notif-card--leida' : (esPromo ? 'notif-card--promocion' : 'notif-card--alerta')); // Se agrega la clase de la tarjeta.
+    card.dataset.id = notif.id; // Se agrega el id de la notificación a la tarjeta.
 
-    const icono = card.querySelector('.notif-card__icono');
-    icono.innerHTML = ICONOS[tipo] ?? ICONOS.alerta;
+    const icono = card.querySelector('.notif-card__icono'); // Se obtiene el icono de la tarjeta.
+    icono.innerHTML = ICONOS[tipo] ?? ICONOS.alerta; // Se agrega el icono a la tarjeta.
 
-    card.querySelector('.notif-card__mensaje').textContent = notif.mensaje;
-    card.querySelector('.notif-card__fecha').textContent = formatearFecha(notif.fecha);
+    card.querySelector('.notif-card__mensaje').textContent = notif.mensaje; // Se agrega el mensaje a la tarjeta.
+    card.querySelector('.notif-card__fecha').textContent = formatearFecha(notif.fecha); // Se agrega la fecha a la tarjeta.
 
     const btnLeer = card.querySelector('[data-accion="leer"]');
     if (leida) {
-        btnLeer.remove();
+        btnLeer.remove(); // Se elimina el botón de leer si la notificación ya fue leída.
     } else {
-        btnLeer.dataset.id = notif.id;
+        btnLeer.dataset.id = notif.id; // Se agrega el id de la notificación al botón de leer.
     }
 
-    return card;
+    return card; // Devuelve la tarjeta creada.
 }
 
 function pintar() {
-    lista.replaceChildren(...notificaciones.map(crearTarjeta));
-    mensaje.hidden = notificaciones.length > 0;
-    actualizarBadges();
+    // Dibuja todas las notificaciones en la lista.
+    lista.replaceChildren(...notificaciones.map(crearTarjeta)); // Se reemplazan las notificaciones viejas por las nuevas.
+    mensaje.hidden = notificaciones.length > 0; // Se oculta el mensaje si hay notificaciones.
+    actualizarBadges(); // Actualiza los badges de total y no leídas.
 }
 
 lista.addEventListener('click', async (e) => {
-    const btn = e.target.closest('[data-accion="leer"]');
+    const btn = e.target.closest('[data-accion="leer"]'); // Se obtiene el botón de leer.
     if (!btn) return;
 
     const id = Number(btn.dataset.id);
@@ -128,6 +137,7 @@ lista.addEventListener('click', async (e) => {
 });
 
 async function iniciar() {
+    // Carga las notificaciones del API y las muestra.
     try {
         notificaciones = await get('/notificacion');
         if (!Array.isArray(notificaciones)) notificaciones = [];

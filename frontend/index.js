@@ -32,20 +32,24 @@ const filtroError = document.getElementById('filtro-error');
 const contenedorFiltrosPersonalizados = document.getElementById('filtros-personalizados');
 
 const formatearFrecuencia = (dias) => {
+    // Convierte un array de días en texto legible (ej: "Lunes y Martes").
     if (dias.length === 1) return dias[0];
     if (dias.length === 2) return `${dias[0]} y ${dias[1]}`;
     return `${dias.slice(0, -1).join(', ')} y ${dias.at(-1)}`;
 };
 
 const parseFrecuencia = (texto) => {
+    // Extrae del texto de frecuencia los días que están en la lista DIAS.
     if (!texto) return [];
     return DIAS.filter((d) => texto.includes(d));
 };
 
 const tieneDispenserEnStock = (stock) =>
+    // Indica si el stock del cliente incluye dispenser.
     stock?.some((s) => s.productos?.nombre?.toLowerCase().includes('dispenser') && s.cantidad > 0);
 
 const resetFormulario = () => {
+    // Limpia el modal de cliente y lo deja listo para alta nueva.
     editandoId = null;
     modalTitulo.textContent = 'Nuevo cliente';
     formNuevo.reset();
@@ -57,6 +61,7 @@ const resetFormulario = () => {
 };
 
 const abrirEditar = (cliente) => {
+    // Abre el modal precargado con los datos del cliente a editar.
     editandoId = cliente.id;
     modalTitulo.textContent = 'Editar cliente';
     formError.hidden = true;
@@ -95,12 +100,14 @@ dispenserToggle.addEventListener('click', (e) => {
 
 // --- API ---
 async function get(ruta) {
+    // GET al API: pide datos y los devuelve como JSON.
     const res = await fetch(`${API}${ruta}`);
     if (!res.ok) throw new Error(`Error en ${ruta}`);
     return res.json();
 }
 
 async function post(ruta, body) {
+    // POST al API: crea un recurso (un cliente/ filtro/ producto, etc) y devuelve la respuesta.
     const res = await fetch(`${API}${ruta}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -112,6 +119,7 @@ async function post(ruta, body) {
 }
 
 async function put(ruta, body) {
+    // PUT al API: actualiza un recurso y devuelve la respuesta.
     const res = await fetch(`${API}${ruta}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -123,6 +131,7 @@ async function put(ruta, body) {
 }
 
 async function del(ruta) {
+    // DELETE al API: elimina un recurso.
     const res = await fetch(`${API}${ruta}`, { method: 'DELETE' });
     if (!res.ok) {
         const data = await res.json().catch(() => ({}));
@@ -132,8 +141,10 @@ async function del(ruta) {
 
 // --- Helpers ---
 const plata = (n) => `$${Number(n).toLocaleString('es-AR')}`;
+// Formatea un número como pesos argentinos.
 
 const haceDias = (fecha) => {
+    // Calcula cuántos días pasaron desde una fecha hasta hoy.
     if (!fecha) return '—';
     const dias = Math.floor((Date.now() - new Date(fecha)) / 86400000);
     return `${Math.max(0, dias)} días`;
@@ -141,6 +152,7 @@ const haceDias = (fecha) => {
 
 // --- Tarjeta ---
 function pintarStock(contenedor, stock) {
+    // Muestra la lista de productos en casa dentro de una tarjeta.
     if (!stock?.length) {
         contenedor.innerHTML = '<p class="tarjeta-cliente__stock-vacio">Sin productos en casa</p>';
         return;
@@ -151,6 +163,7 @@ function pintarStock(contenedor, stock) {
 }
 
 function crearTarjeta(cliente) {
+    // Clona el template y arma la tarjeta de un cliente.
     const card = tpl.content.cloneNode(true).querySelector('.tarjeta-cliente');
     const deuda = card.querySelector('.tarjeta-cliente__deuda');
 
@@ -179,6 +192,7 @@ function crearTarjeta(cliente) {
 
 // --- Filtros personalizados ---
 async function cargarAsignacionesFiltros() {
+    // Trae del API qué clientes tiene cada filtro personalizado.
     asignaciones = {};
     await Promise.all(filtrosPersonalizados.map(async (f) => {
         const clientesFiltro = await get(`/filtro/${f.id}/clientes`).catch(() => []);
@@ -187,6 +201,7 @@ async function cargarAsignacionesFiltros() {
 }
 
 function pintarFiltrosPersonalizados() {
+    // Dibuja los botones de filtros personalizados.
     contenedorFiltrosPersonalizados.replaceChildren(
         ...filtrosPersonalizados.map((f) => {
             const btn = document.createElement('button');
@@ -213,6 +228,7 @@ function pintarFiltrosPersonalizados() {
 }
 
 function pintarListaClientesFiltro() {
+    // Lista los checkboxes de clientes dentro del modal de filtro.
     const texto = filtroBusquedaClientes.value.trim().toLowerCase();
 
     const visibles = [...clientes]
@@ -242,6 +258,7 @@ function pintarListaClientesFiltro() {
 }
 
 function abrirModalFiltro(filtroId = null) {
+    // Abre el modal para crear o editar un filtro personalizado.
     editandoFiltroId = filtroId;
     filtroError.hidden = true;
     filtroBusquedaClientes.value = '';
@@ -265,6 +282,7 @@ function abrirModalFiltro(filtroId = null) {
 }
 
 function cerrarModalFiltro() {
+    // Cierra y resetea el modal de filtro.
     modalFiltro.hidden = true;
     editandoFiltroId = null;
     seleccionModal = new Set();
@@ -272,10 +290,12 @@ function cerrarModalFiltro() {
 }
 
 function idsSeleccionadosEnModal() {
+    // Devuelve los ids de clientes marcados en el modal.
     return [...seleccionModal];
 }
 
 async function sincronizarAsignaciones(filtroId, seleccionados) {
+    // Agrega/quita clientes del filtro en el API según la selección.
     const actual = asignaciones[filtroId] ?? new Set();
     const nuevos = new Set(seleccionados);
 
@@ -291,6 +311,7 @@ async function sincronizarAsignaciones(filtroId, seleccionados) {
 }
 
 function activarFiltroPill(pill) {
+    // Activa un pill (el circulito) de filtro y vuelve a pintar la lista.
     document.querySelectorAll('.filtro-pill.active').forEach((p) => p.classList.remove('active'));
     pill.classList.add('active');
 
@@ -312,6 +333,7 @@ function activarFiltroPill(pill) {
 
 // --- Filtros ---
 function clientesVisibles() {
+    // Devuelve los clientes que pasan búsqueda y filtros actuales.
     const texto = document.getElementById('busqueda').value.trim().toLowerCase();
     const deuda = document.getElementById('filtro-deuda').value;
     const repartidor = document.getElementById('filtro-repartidor').value;
@@ -331,10 +353,12 @@ function clientesVisibles() {
 }
 
 function pintar() {
+    // Vuelve a dibujar (mostrar) la lista de tarjetas con los clientes visibles.
     const visibles = clientesVisibles();
     lista.replaceChildren(...visibles.map(crearTarjeta));
     mensaje.hidden = visibles.length > 0;
     if (!visibles.length) {
+        // Si no hay clientes visibles, muestra un mensaje de error.
         mensaje.textContent = 'No se encontraron clientes con esos filtros.';
         mensaje.classList.remove('mensaje-estado--error');
     }
@@ -343,32 +367,49 @@ function pintar() {
 // --- Eventos ---
 document.getElementById('filtros').addEventListener('click', (e) => {
     if (e.target.closest('#btn-nuevo-filtro')) {
+        // Maneja el click en el botón de nuevo filtro.
         abrirModalFiltro();
+        // Abre el modal para crear un nuevo filtro.
         return;
     }
 
     const borrar = e.target.closest('[data-accion="borrar-filtro"]');
     if (borrar) {
         e.stopPropagation();
+        // Maneja el click en el botón de borrar un filtro.
         const pill = borrar.closest('.filtro-pill--custom');
+        // Obtiene el pill (el circulito) del filtro.
         if (!pill) return;
+        // Si no hay pill, sale.
         const id = Number(pill.dataset.filtroId);
+        // Obtiene el id del filtro.
         const filtroActual = filtrosPersonalizados.find((f) => f.id === id);
+        // Obtiene el filtro actual.
         if (!confirm(`¿Eliminar el filtro "${filtroActual?.nombre ?? ''}"?`)) return;
+        // Si no se confirma la eliminación, sale.
 
         del(`/filtro/${id}/delete`)
+            // Elimina el filtro del API.
             .then(() => {
                 filtrosPersonalizados = filtrosPersonalizados.filter((f) => f.id !== id);
+                // Actualiza la lista de filtros.
                 delete asignaciones[id];
+                // Elimina la asignación del filtro.
                 if (filtro.tipo === 'personalizado' && filtro.personalizadoId === id) {
+                    // Si el filtro actual es el filtro personalizado, se actualiza el filtro.
                     filtro = { tipo: 'todos', dia: null, personalizadoId: null };
                     document.querySelectorAll('.filtro-pill.active').forEach((p) => p.classList.remove('active'));
+                    // Elimina el pill activo.
                     document.querySelector('.filtro-pill[data-filtro="todos"]')?.classList.add('active');
+                    // Activa el pill de todos.
                 }
                 pintarFiltrosPersonalizados();
+                // Vuelve a pintar los filtros personalizados.
                 pintar();
+                // Vuelve a pintar la lista de clientes.
             })
             .catch((error) => alert(error.message || 'Error al eliminar el filtro'));
+            // Si hay un error, muestra un mensaje de error.
         return;
     }
 
@@ -377,6 +418,7 @@ document.getElementById('filtros').addEventListener('click', (e) => {
         e.stopPropagation();
         const pill = editar.closest('.filtro-pill--custom');
         if (pill) abrirModalFiltro(Number(pill.dataset.filtroId));
+        // Abre el modal para editar el filtro.
         return;
     }
 
@@ -386,38 +428,54 @@ document.getElementById('filtros').addEventListener('click', (e) => {
 });
 
 modalFiltro.querySelectorAll('[data-cerrar-filtro]').forEach((el) => {
+    // Maneja el click en el botón de cerrar el modal de filtro.
     el.addEventListener('click', cerrarModalFiltro);
 });
 
 filtroBusquedaClientes.addEventListener('input', pintarListaClientesFiltro);
+// Vuelve a pintar la lista de clientes dentro del modal de filtro.
 
 filtroListaClientes.addEventListener('change', (e) => {
+    // Maneja el cambio en la selección de clientes dentro del modal de filtro.
     if (e.target.type !== 'checkbox') return;
+    // Si no es un checkbox, sale.
     const id = Number(e.target.value);
+    // Obtiene el id del cliente.
     if (e.target.checked) seleccionModal.add(id);
+    // Si el checkbox está marcado, agrega el id al conjunto de clientes seleccionados.
     else seleccionModal.delete(id);
+    // Si el checkbox no está marcado, elimina el id del conjunto de clientes seleccionados.
 });
 
 formFiltro.addEventListener('submit', async (e) => {
     e.preventDefault();
+    // Maneja el submit del formulario de filtro.
     filtroError.hidden = true;
 
     const seleccionados = idsSeleccionadosEnModal();
+    // Obtiene los ids de los clientes seleccionados.
     const nombre = filtroNombre.value.trim();
+    // Obtiene el nombre del filtro.
 
     try {
         if (editandoFiltroId === 'nuevo') {
             if (!nombre) {
+                // Si no hay nombre, muestra un mensaje de error.
                 filtroError.textContent = 'El nombre del filtro es obligatorio';
                 filtroError.hidden = false;
                 return;
             }
 
             const creado = await post('/filtro/create', { nombre });
+            // Crea el filtro en el API.
             const filtroNuevo = Array.isArray(creado) ? creado[0] : creado;
             filtrosPersonalizados.push(filtroNuevo);
+            // Agrega el filtro a la lista de filtros personalizados.
             await sincronizarAsignaciones(filtroNuevo.id, seleccionados);
+            // Sincroniza las asignaciones de clientes con el filtro.
             filtro = { tipo: 'personalizado', dia: null, personalizadoId: filtroNuevo.id };
+            // Actualiza el filtro actual.
+
         } else {
             if (!nombre) {
                 filtroError.textContent = 'El nombre del filtro es obligatorio';
@@ -443,7 +501,9 @@ formFiltro.addEventListener('submit', async (e) => {
         const pillActivo = contenedorFiltrosPersonalizados.querySelector(
             `[data-filtro-id="${filtro.personalizadoId}"]`
         );
+        // Obtiene el pill del filtro.
         pillActivo?.classList.add('active');
+        // Activa el pill del filtro.
 
         cerrarModalFiltro();
         pintar();
@@ -455,10 +515,12 @@ formFiltro.addEventListener('submit', async (e) => {
 
 ['busqueda', 'filtro-deuda', 'filtro-repartidor'].forEach((id) => {
     document.getElementById(id).addEventListener(id === 'busqueda' ? 'input' : 'change', pintar);
-});
+}); // Vuelve a pintar la lista de clientes cuando cambia el filtro de búsqueda o de repartidor.
 
 lista.addEventListener('click', async (e) => {
+    // Maneja el click en la lista de clientes.
     const btn = e.target.closest('[data-accion]');
+    // Obtiene el botón clickeado.
     if (!btn) return;
 
     const cliente = clientes.find((c) => c.id == btn.dataset.id);
@@ -475,12 +537,14 @@ lista.addEventListener('click', async (e) => {
 
     if (btn.dataset.accion === 'editar' && cliente) {
         abrirEditar(cliente);
+        // Abre el modal para editar el cliente.
     }
 
     if (btn.dataset.accion === 'no-compra' && cliente) {
         if (!confirm(`¿Registrar que ${cliente.nombre} no quiso comprar en la visita de hoy?`)) return;
 
         try {
+            // Registra la no compra en el API.
             await post('/visita/create', {
                 cliente_id: Number(cliente.id),
                 repartidor_id: cliente.repartidor_id,
@@ -498,31 +562,35 @@ lista.addEventListener('click', async (e) => {
 document.getElementById('btn-nuevo').addEventListener('click', () => {
     resetFormulario();
     modal.hidden = false;
-});
+}); // Abre el modal para crear un nuevo cliente.
 
 modal.querySelectorAll('[data-cerrar]').forEach((el) => {
     el.addEventListener('click', () => { modal.hidden = true; });
-});
+}); // Cierra el modal cuando se clickea el botón de cerrar.
 
 formNuevo.addEventListener('submit', async (e) => {
+    // Maneja el submit del formulario de nuevo cliente.
     e.preventDefault();
     formError.hidden = true;
+    // Oculta el mensaje de error.
 
     const dias = [...diasVisita.querySelectorAll('.dia-btn.active')].map((b) => b.dataset.dia);
+    // Obtiene los días de visita seleccionados.
     if (!dias.length) {
         formError.textContent = 'Seleccioná al menos un día de visita';
         formError.hidden = false;
-        return;
+        return; // Si no hay días de visita seleccionados, muestra un mensaje de error.
     }
 
     const tieneDispenser = dispenserToggle.querySelector('[data-dispenser="si"]').classList.contains('active');
+    // Obtiene si el cliente tiene dispenser.
     const datos = Object.fromEntries(new FormData(formNuevo));
+    // Obtiene los datos del formulario.
+    datos.repartidor_id = Number(datos.repartidor_id); // Convierte el id del repartidor a número.
+    datos.frecuencia_visitas = formatearFrecuencia(dias); // Formatea las frecuencias de visita.
+    datos.tiene_dispenser = tieneDispenser; // Obtiene si el cliente tiene dispenser.
 
-    datos.repartidor_id = Number(datos.repartidor_id);
-    datos.frecuencia_visitas = formatearFrecuencia(dias);
-    datos.tiene_dispenser = tieneDispenser;
-
-    if (!editandoId) {
+    if (!editandoId) { // Si no se está editando un cliente, se activa el cliente y se desactiva la promoción.
         datos.activo = true;
         datos.es_promocion = false;
         datos.fecha_inicio_promo = null;
@@ -555,6 +623,7 @@ formNuevo.addEventListener('submit', async (e) => {
 
 // --- Inicio ---
 async function iniciar() {
+    // Arranca la página: carga datos del API y pinta la UI.
     try {
         [repartidores, clientes, filtrosPersonalizados] = await Promise.all([
             get('/repartidor'),

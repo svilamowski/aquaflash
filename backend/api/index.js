@@ -1,6 +1,5 @@
 import express from "express";
 import cors from "cors";
-import { supabase } from "../src/database/pool.js";
 import clienteRouter from "../src/controllers/cliente-controller.js";
 import filtroRouter from "../src/controllers/filtro-controller.js";
 import notificacionRouter from "../src/controllers/notificacion-controller.js";
@@ -26,17 +25,6 @@ app.use("/api/estadisticas", estadisticasRouter);
 
 app.get("/", (req, res) => {
     res.json({ mensaje: "¡El backend de AquaFlash está vivo y funcionando!" });
-});
-
-app.get("/test-db", async (req, res) => {
-    try {
-        const { data, error } = await supabase.from("repartidores").select("*");
-        if (error) throw error;
-        res.json({ repartidores: data });
-    } catch (error) {
-        console.error("Error en base de datos:", error.message);
-        res.status(500).json({ error: "Hubo un error al conectar con Supabase" });
-    }
 });
 
 export default app;

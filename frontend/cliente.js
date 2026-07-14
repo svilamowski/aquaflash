@@ -21,8 +21,10 @@ const formEditar = document.getElementById('form-editar');
 const formError = document.getElementById('form-error');
 
 const plata = (n) => `$${Number(n).toLocaleString('es-AR')}`;
+// Formatea un número como pesos argentinos.
 
 const haceDias = (fecha) => {
+    // Calcula hace cuántos días fue una fecha.
     if (!fecha) return '—';
     const dias = Math.floor((Date.now() - new Date(fecha)) / 86400000);
     const n = Math.max(0, dias);
@@ -30,6 +32,7 @@ const haceDias = (fecha) => {
 };
 
 const formatearFecha = (fecha) => {
+    // Formatea fecha y hora en español de Argentina.
     if (!fecha) return '—';
     const d = new Date(fecha);
     const fechaStr = d.toLocaleDateString('es-AR', { day: '2-digit', month: '2-digit', year: 'numeric' });
@@ -38,28 +41,34 @@ const formatearFecha = (fecha) => {
 };
 
 const formatearFrecuencia = (dias) => {
+    // Convierte días en texto legible de frecuencia.
     if (dias.length === 1) return dias[0];
     if (dias.length === 2) return `${dias[0]} y ${dias[1]}`;
     return `${dias.slice(0, -1).join(', ')} y ${dias.at(-1)}`;
 };
 
 const parseFrecuencia = (texto) => {
+    // Saca del texto de frecuencia los días reconocidos.
     if (!texto) return [];
     return DIAS.filter((d) => texto.includes(d));
 };
 
 let stockCliente = [];
 
+// Indica si el stock del cliente incluye dispenser.
 const tieneDispenserEnStock = (stock) =>
+    // Indica si el stock del cliente incluye dispenser.
     stock?.some((s) => s.productos?.nombre?.toLowerCase().includes('dispenser') && s.cantidad > 0);
 
 async function get(ruta) {
+    // GET a la API y devuelve JSON.
     const res = await fetch(`${API}${ruta}`);
     if (!res.ok) throw new Error(`Error en ${ruta}`);
     return res.json();
 }
 
 async function post(ruta, body) {
+    // POST a la API para crear un recurso.
     const res = await fetch(`${API}${ruta}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -71,6 +80,7 @@ async function post(ruta, body) {
 }
 
 async function put(ruta, body) {
+    // PUT a la API para actualizar un recurso.
     const res = await fetch(`${API}${ruta}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
@@ -81,19 +91,20 @@ async function put(ruta, body) {
     return data;
 }
 
-// --- Tabs ---
+// --- Tabs --- (historial, productos y notas internas del cliente)
 document.getElementById('tabs').addEventListener('click', (e) => {
-    const tab = e.target.closest('.tab');
+    const tab = e.target.closest('.tab'); // Se obtiene el tab correspondiente al clic.
     if (!tab) return;
 
-    document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active'));
-    tab.classList.add('active');
-    document.querySelectorAll('.tab-panel').forEach((p) => p.hidden = true);
-    document.getElementById(`panel-${tab.dataset.tab}`).hidden = false;
+    document.querySelectorAll('.tab').forEach((t) => t.classList.remove('active')); // Se remueve la clase active de todos los tabs.
+    tab.classList.add('active'); // Se agrega la clase active al tab correspondiente.
+    document.querySelectorAll('.tab-panel').forEach((p) => p.hidden = true); // Se ocultan todos los paneles de los tabs.
+    document.getElementById(`panel-${tab.dataset.tab}`).hidden = false; // Se muestra el panel correspondiente al tab.
 });
 
 // --- Cliente ---
 function pintarCliente() {
+    // Completa en pantalla los datos del cliente (nombre, deuda, etc.).
     document.title = `AquaFlash - ${cliente.nombre}`;
     document.getElementById('cliente-nombre').textContent = cliente.nombre;
     document.getElementById('cliente-direccion').textContent = cliente.direccion;
@@ -116,6 +127,7 @@ function pintarCliente() {
 }
 
 function aplicarVentaAlCliente(montoTotal, montoPagado) {
+    // Actualiza en memoria deuda y fechas tras registrar una venta.
     if (!cliente || (montoTotal <= 0 && montoPagado <= 0)) return;
 
     const hoy = new Date().toISOString().split('T')[0];
@@ -128,6 +140,7 @@ function aplicarVentaAlCliente(montoTotal, montoPagado) {
 }
 
 function badgeVisita(visita) {
+    // Arma el HTML del badge (pago / no compró / etc.) de una visita.
     if (!visita.compro) {
         return '<span class="historial-badge historial-badge--no-compra">No compró</span>';
     }
@@ -142,6 +155,7 @@ function badgeVisita(visita) {
 }
 
 function pintarHistorial(visitas) {
+    // Dibuja la lista del historial de visitas del cliente.
     const vacio = document.getElementById('historial-vacio');
     const lista = document.getElementById('historial-lista');
 
@@ -175,18 +189,21 @@ function pintarHistorial(visitas) {
 }
 
 function cargarStockEnCasa(stock) {
+    // Guarda el stock del cliente en un mapa productoId → cantidad.
     stockCliente = stock ?? [];
     stockEnCasa = {};
     stock.forEach((s) => {
         const id = s.producto_id
-            ?? productosCatalogo.find((p) => p.nombre === s.productos?.nombre)?.id;
-        if (id) stockEnCasa[id] = s.cantidad;
+            ?? productosCatalogo.find((p) => p.nombre === s.productos?.nombre)?.id; // Se obtiene el id del producto correspondiente al stock.
+        if (id) stockEnCasa[id] = s.cantidad; // Se guarda el stock en casa del producto correspondiente.
     });
 }
 
 const getStockProducto = (productoId) => stockEnCasa[productoId] ?? 0;
+// Devuelve cuántas unidades de un producto tiene el cliente en casa.
 
 function actualizarLimitesRetiro(productoId) {
+    // Deshabilita el + de retiro si se supera el stock en casa.
     const fila = document.querySelector(`.producto-fila[data-producto-id="${productoId}"]`);
     if (!fila) return;
 
@@ -200,6 +217,7 @@ function actualizarLimitesRetiro(productoId) {
 }
 
 function actualizarTotales() {
+    // Recalcula monto total, subtotales y saldo a deber.
     let total = 0;
 
     productosCatalogo.forEach((p) => {
@@ -207,46 +225,48 @@ function actualizarTotales() {
         const subtotal = entregar * (p.precio ?? 0);
         total += subtotal;
 
-        const subEl = document.querySelector(`[data-subtotal-id="${p.id}"]`);
+        const subEl = document.querySelector(`[data-subtotal-id="${p.id}"]`); // Se obtiene el elemento del subtotal correspondiente al producto.
         if (subEl) {
-            subEl.textContent = entregar > 0 ? plata(subtotal) : '—';
-            subEl.classList.toggle('producto-fila__subtotal--vacio', entregar === 0);
+            subEl.textContent = entregar > 0 ? plata(subtotal) : '—'; // Se actualiza el texto del subtotal correspondiente al producto.
+            subEl.classList.toggle('producto-fila__subtotal--vacio', entregar === 0); // Se actualiza la clase del subtotal correspondiente al producto.
         }
-        actualizarLimitesRetiro(p.id);
+        actualizarLimitesRetiro(p.id); // Se actualiza los límites de retiro del producto correspondiente.
     });
 
-    document.getElementById('monto-total').textContent = plata(total);
+    document.getElementById('monto-total').textContent = plata(total); // Se actualiza el texto del monto total.
 
-    const pagado = Number(document.getElementById('monto-pagado').value) || 0;
-    const saldoEl = document.getElementById('resumen-saldo');
-    const saldoMontoEl = document.getElementById('monto-saldo');
-    const deudaActual = Number(cliente?.deuda || 0);
-    const deudaResultante = Math.max(0, deudaActual + total - pagado);
+    const pagado = Number(document.getElementById('monto-pagado').value) || 0; // Se obtiene el monto pagado.
+    const saldoEl = document.getElementById('resumen-saldo'); // Se obtiene el elemento del resumen de saldo.
+    const saldoMontoEl = document.getElementById('monto-saldo'); // Se obtiene el elemento del monto de saldo.
+    const deudaActual = Number(cliente?.deuda || 0); // Se obtiene la deuda actual del cliente.
+    const deudaResultante = Math.max(0, deudaActual + total - pagado); // Se calcula la deuda resultante.
 
-    if (total > 0 || pagado > 0) {
+    if (total > 0 || pagado > 0) { // Si hay un monto total o pagado, se muestra el resumen de saldo.
         saldoEl.hidden = false;
-        saldoMontoEl.textContent = plata(deudaResultante);
+        saldoMontoEl.textContent = plata(deudaResultante); // Se actualiza el texto del monto de saldo.
     } else {
-        saldoEl.hidden = true;
-        saldoMontoEl.textContent = plata(0);
+        saldoEl.hidden = true; // Se oculta el resumen de saldo.
+        saldoMontoEl.textContent = plata(0); // Se actualiza el texto del monto de saldo.
     }
 }
 
 function pintarStockCards(stock) {
-    const contenedor = document.getElementById('stock-cards');
+    // Muestra las tarjetas de stock actual en domicilio.
+    const contenedor = document.getElementById('stock-cards'); // Se obtiene el contenedor de las tarjetas de stock.
     if (!stock?.length) {
         contenedor.innerHTML = '<p class="panel-vacio">Sin productos en casa</p>';
         return;
     }
-    contenedor.innerHTML = stock.map((s) => `
+    contenedor.innerHTML = stock.map((s) => ` // Se muestran las tarjetas de stock.
         <div class="stock-card">
-            <span class="stock-card__nombre">${s.productos?.nombre ?? 'Producto'}</span>
-            <span class="stock-card__cantidad">${s.cantidad}</span>
+            <span class="stock-card__nombre">${s.productos?.nombre ?? 'Producto'}</span> // Se muestra el nombre del producto.
+            <span class="stock-card__cantidad">${s.cantidad}</span> // Se muestra la cantidad del producto.
         </div>
-    `).join('');
+    `).join(''); // Se unen las tarjetas de stock.
 }
 
 function pintarFormProductos() {
+    // Arma el formulario de entregar/retirar productos.
     const contenedor = document.getElementById('productos-form');
     cantidades = {};
 
@@ -287,26 +307,26 @@ function pintarFormProductos() {
 }
 
 document.getElementById('productos-form').addEventListener('click', (e) => {
-    const btn = e.target.closest('button[data-accion]');
+    const btn = e.target.closest('button[data-accion]'); // Se obtiene el botón correspondiente al clic.
     if (!btn || btn.disabled) return;
 
-    const fila = btn.closest('.producto-fila');
-    const stepper = btn.closest('.cantidad-stepper');
-    const productoId = Number(fila.dataset.productoId);
-    const tipo = stepper.dataset.tipo;
-    const span = stepper.querySelector('span:not([data-subtotal-id])') ?? stepper.querySelector('span');
-    let valor = cantidades[productoId][tipo];
+    const fila = btn.closest('.producto-fila'); // Se obtiene la fila correspondiente al botón.
+    const stepper = btn.closest('.cantidad-stepper'); // Se obtiene el stepper correspondiente al botón.
+    const productoId = Number(fila.dataset.productoId); // Se obtiene el id del producto correspondiente al botón.
+    const tipo = stepper.dataset.tipo; // Se obtiene el tipo de stepper correspondiente al botón.
+    const span = stepper.querySelector('span:not([data-subtotal-id])') ?? stepper.querySelector('span'); // Se obtiene el span correspondiente al botón.
+    let valor = cantidades[productoId][tipo]; // Se obtiene el valor correspondiente al botón.
 
     if (btn.dataset.accion === 'mas') {
-        if (tipo === 'retirar' && valor >= getStockProducto(productoId)) return;
+        if (tipo === 'retirar' && valor >= getStockProducto(productoId)) return; // Si el tipo es retirar y el valor es mayor o igual al stock en casa, se retorna.
         valor += 1;
     } else if (valor > 0) {
-        valor -= 1;
+        valor -= 1; // Si el valor es mayor a 0, se resta 1.
     }
 
     cantidades[productoId][tipo] = valor;
     stepper.querySelectorAll('span').forEach((s) => {
-        if (!s.dataset.subtotalId) s.textContent = valor;
+        if (!s.dataset.subtotalId) s.textContent = valor; // Se actualiza el texto del span correspondiente al botón.
     });
     actualizarTotales();
 });
@@ -316,6 +336,7 @@ document.getElementById('monto-pagado').addEventListener('change', actualizarTot
 
 // --- Notas ---
 function pintarNotaVista() {
+    // Muestra la nota interna o un mensaje vacío.
     const caja = document.getElementById('nota-vista');
     if (notaActual) {
         caja.textContent = notaActual;
@@ -327,6 +348,7 @@ function pintarNotaVista() {
 }
 
 function mostrarEdicionNota(editar) {
+    // Alterna entre ver la nota y el modo edición.
     document.getElementById('nota-vista').hidden = editar;
     document.getElementById('btn-editar-nota').hidden = editar;
     document.getElementById('nota-edicion').hidden = !editar;
@@ -346,7 +368,7 @@ document.getElementById('btn-guardar-nota').addEventListener('click', async () =
     notaError.hidden = true;
 
     try {
-        notaActual = document.getElementById('nota-texto').value.trim();
+        notaActual = document.getElementById('nota-texto').value.trim(); 
         await put(`/cliente/${clienteId}/nota/alter`, { nota: notaActual });
         pintarNotaVista();
         mostrarEdicionNota(false);
@@ -369,11 +391,11 @@ document.getElementById('btn-guardar-movimiento').addEventListener('click', asyn
         precio_total_producto: (cantidades[p.id]?.entregar ?? 0) * (p.precio ?? 0),
     })).filter((p) => p.cantidad_entregada > 0 || p.cantidad_retirada > 0);
 
-    const retiroInvalido = productos.find(
-        (p) => p.cantidad_retirada > getStockProducto(p.producto_id)
+    const retiroInvalido = productos.find( // Se busca un producto que tenga más vacíos retirados que los que tiene en casa.
+        (p) => p.cantidad_retirada > getStockProducto(p.producto_id) // Se verifica si la cantidad de vacíos retirados es mayor al stock en casa.
     );
     if (retiroInvalido) {
-        const nombre = productosCatalogo.find((p) => p.id === retiroInvalido.producto_id)?.nombre;
+        const nombre = productosCatalogo.find((p) => p.id === retiroInvalido.producto_id)?.nombre; // Se obtiene el nombre del producto correspondiente al retiro inválido.
         errorMov.textContent = `No podés retirar más vacíos de ${nombre} de los que tiene en casa (${getStockProducto(retiroInvalido.producto_id)})`;
         errorMov.hidden = false;
         return;
@@ -397,8 +419,8 @@ document.getElementById('btn-guardar-movimiento').addEventListener('click', asyn
             productos,
         });
 
-        document.getElementById('monto-pagado').value = '0';
-        aplicarVentaAlCliente(montoTotal, montoPagado);
+        document.getElementById('monto-pagado').value = '0'; // Se limpia el monto pagado.
+        aplicarVentaAlCliente(montoTotal, montoPagado); // Se aplica la venta al cliente.
         await recargarDatos();
         pintarFormProductos();
     } catch (error) {
@@ -422,21 +444,22 @@ document.getElementById('btn-retirar-dispenser').addEventListener('click', async
 
 // --- Editar cliente ---
 const diasVisita = document.getElementById('dias-visita');
-const dispenserToggle = document.getElementById('dispenser-toggle');
+const dispenserToggle = document.getElementById('dispenser-toggle'); // Se obtiene el contenedor de los botones de toggle.
 
 diasVisita.addEventListener('click', (e) => {
-    const btn = e.target.closest('.dia-btn');
-    if (btn) btn.classList.toggle('active');
+    const btn = e.target.closest('.dia-btn'); // Se obtiene el botón correspondiente al clic.
+    if (btn) btn.classList.toggle('active'); // Se agrega la clase active al botón correspondiente.
 });
 
 dispenserToggle.addEventListener('click', (e) => {
     const btn = e.target.closest('.toggle-btn');
     if (!btn) return;
-    dispenserToggle.querySelectorAll('.toggle-btn').forEach((b) => b.classList.remove('active'));
+    dispenserToggle.querySelectorAll('.toggle-btn').forEach((b) => b.classList.remove('active')); // Se remueve la clase active de todos los botones de toggle.
     btn.classList.add('active');
 });
 
 function abrirEditar() {
+    // Abre el modal con los datos actuales del cliente.
     formError.hidden = true;
     formEditar.nombre.value = cliente.nombre;
     formEditar.direccion.value = cliente.direccion;
@@ -457,17 +480,17 @@ function abrirEditar() {
     modalEditar.hidden = false;
 }
 
-document.getElementById('btn-editar').addEventListener('click', abrirEditar);
+document.getElementById('btn-editar').addEventListener('click', abrirEditar); // Se abre el modal con los datos actuales del cliente.
 
 modalEditar.querySelectorAll('[data-cerrar]').forEach((el) => {
-    el.addEventListener('click', () => { modalEditar.hidden = true; });
+    el.addEventListener('click', () => { modalEditar.hidden = true; }); // Se cierra el modal cuando se clickea el botón de cerrar.
 });
 
-formEditar.addEventListener('submit', async (e) => {
-    e.preventDefault();
+formEditar.addEventListener('submit', async (e) => { // Se envía el formulario para editar el cliente.
+    e.preventDefault(); // Se evita el envío del formulario.
     formError.hidden = true;
 
-    const dias = [...diasVisita.querySelectorAll('.dia-btn.active')].map((b) => b.dataset.dia);
+    const dias = [...diasVisita.querySelectorAll('.dia-btn.active')].map((b) => b.dataset.dia); // Se obtienen los días de visita activos.
     if (!dias.length) {
         formError.textContent = 'Seleccioná al menos un día de visita';
         formError.hidden = false;
@@ -482,11 +505,11 @@ formEditar.addEventListener('submit', async (e) => {
     datos.es_promocion = cliente.es_promocion;
 
     try {
-        const respuesta = await put(`/cliente/${clienteId}/alter`, datos);
+        const respuesta = await put(`/cliente/${clienteId}/alter`, datos); // Se actualizan los datos del cliente.
         cliente = Array.isArray(respuesta) ? respuesta[0] : respuesta;
-        pintarCliente();
-        modalEditar.hidden = true;
-        await recargarStock();
+        pintarCliente(); // Se pinta el cliente.
+        modalEditar.hidden = true; // Se cierra el modal.
+        await recargarStock(); // Se recarga el stock.
     } catch (error) {
         formError.textContent = error.message;
         formError.hidden = false;
@@ -505,12 +528,14 @@ document.getElementById('btn-baja').addEventListener('click', async () => {
 });
 
 async function recargarStock() {
+    // Vuelve a pedir el stock al API y lo pinta.
     const stock = await get(`/cliente/${clienteId}/stock`).catch(() => []);
     cargarStockEnCasa(stock);
     pintarStockCards(stock);
 }
 
 async function recargarDatos() {
+    // Recarga cliente, stock e historial desde la API.
     const [clienteData, stock, visitas] = await Promise.all([
         get(`/cliente/${clienteId}`),
         get(`/cliente/${clienteId}/stock`).catch(() => []),
@@ -524,6 +549,7 @@ async function recargarDatos() {
 }
 
 async function iniciar() {
+    // Carga todo lo del detalle del cliente y muestra la página.
     if (!clienteId) {
         cargando.hidden = true;
         errorEl.hidden = false;
@@ -532,7 +558,7 @@ async function iniciar() {
     }
 
     try {
-        const [clienteData, stock, visitas, nota, reps, productos] = await Promise.all([
+        const [clienteData, stock, visitas, nota, reps, productos] = await Promise.all([ // Se cargan los datos del cliente, stock, visitas, nota, repartidores y productos.
             get(`/cliente/${clienteId}`),
             get(`/cliente/${clienteId}/stock`).catch(() => []),
             get(`/visita/cliente/${clienteId}`),
@@ -548,7 +574,7 @@ async function iniciar() {
         cargarStockEnCasa(stock);
 
         const selectRep = document.getElementById('form-repartidor');
-        selectRep.replaceChildren(...repartidores.map((r) => new Option(r.nombre, r.id)));
+        selectRep.replaceChildren(...repartidores.map((r) => new Option(r.nombre, r.id))); 
 
         pintarCliente();
         pintarHistorial(visitas);

@@ -1,10 +1,12 @@
 const THEME_KEY = 'aquaflash-theme';
 
 function esTemaOscuro() {
+    // Devuelve true si el tema actual es oscuro.
     return document.documentElement.getAttribute('data-theme') === 'dark';
 }
 
 function aplicarTema(oscuro) {
+    // Aplica claro/oscuro, lo guarda en localStorage y avisa a la página.
     if (oscuro) {
         document.documentElement.setAttribute('data-theme', 'dark');
         localStorage.setItem(THEME_KEY, 'dark');
@@ -16,10 +18,12 @@ function aplicarTema(oscuro) {
 }
 
 function alternarTema() {
+    // Cambia entre tema claro y oscuro.
     aplicarTema(!esTemaOscuro());
 }
 
 function initTema() {
+    // Al cargar, aplica el tema guardado en localStorage.
     if (localStorage.getItem(THEME_KEY) === 'dark') {
         document.documentElement.setAttribute('data-theme', 'dark');
     }

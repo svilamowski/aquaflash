@@ -10,8 +10,10 @@ const canvasGrafico = document.getElementById('grafico-ingresos');
 let grafico = null;
 
 const plata = (n) => `$${Number(n).toLocaleString('es-AR')}`;
+// Formatea un número como pesos argentinos.
 
 function textoVariacion(valor, invertir = false) {
+    // Arma el texto y la clase CSS de una variación porcentual.
     if (valor === 0) {
         return { texto: '0% vs período anterior', clase: 'kpi-card__variacion--neutra', flecha: '' };
     }
@@ -30,12 +32,14 @@ function textoVariacion(valor, invertir = false) {
 }
 
 function aplicarVariacion(elemento, valor, invertir = false) {
+    // Escribe en un elemento la variación del KPI.
     const { texto, clase } = textoVariacion(valor, invertir);
     elemento.textContent = texto;
     elemento.className = `kpi-card__variacion ${clase}`;
 }
 
 function pintarTarjetas(tarjetas, operativo) {
+    // Rellena las tarjetas KPI principales con los datos del API.
     document.getElementById('kpi-total-vendido').textContent = plata(tarjetas.total_vendido.valor);
     aplicarVariacion(document.getElementById('kpi-total-variacion'), tarjetas.total_vendido.variacion);
 
@@ -73,6 +77,7 @@ function pintarTarjetas(tarjetas, operativo) {
 }
 
 function pintarIndicadores(operativo) {
+    // Rellena los indicadores operativos secundarios.
     document.getElementById('ind-cobrado').textContent = plata(operativo.cobrado_periodo);
     document.getElementById('ind-sin-compra').textContent = operativo.visitas.sin_compra;
     document.getElementById('ind-con-deuda').textContent = operativo.clientes_con_deuda;
@@ -80,39 +85,41 @@ function pintarIndicadores(operativo) {
 }
 
 function pintarRanking(repartidores) {
+    // Dibuja el ranking de repartidores con barras.
     const contenedor = document.getElementById('ranking-repartidores');
     const vacio = document.getElementById('ranking-vacio');
     const conVentas = repartidores.filter((r) => r.ventas > 0 || r.visitas > 0);
 
     if (conVentas.length === 0) {
-        contenedor.replaceChildren();
+        contenedor.replaceChildren(); // Si no hay repartidores con ventas, se reemplaza el contenido del contenedor por nada.
         vacio.hidden = false;
-        return;
+        return; // Si no hay repartidores con ventas, se muestra el mensaje de vacío.
     }
 
-    vacio.hidden = true;
-    const maxVentas = Math.max(...conVentas.map((r) => r.ventas), 1);
+    vacio.hidden = true; // Se oculta el mensaje de vacío.
+    const maxVentas = Math.max(...conVentas.map((r) => r.ventas), 1); // Se obtiene el valor máximo de ventas.
 
     contenedor.replaceChildren(...conVentas.map((rep, i) => {
         const item = document.createElement('div');
         item.className = 'ranking-item';
-        const pct = Math.round((rep.ventas / maxVentas) * 100);
+        const pct = Math.round((rep.ventas / maxVentas) * 100); // Se calcula el porcentaje de ventas.
         item.innerHTML = `
             <span class="ranking-item__pos ${i === 0 ? 'ranking-item__pos--top' : ''}">${i + 1}</span>
             <span class="ranking-item__nombre">${rep.nombre}</span>
             <div class="ranking-item__barra">
-                <div class="ranking-item__barra-fill" style="width: ${pct}%"></div>
+                <div class="ranking-item__barra-fill" style="width: ${pct}%"></div> // Se pinta la barra de ventas.
             </div>
             <div class="ranking-item__stats">
-                <span class="ranking-item__ventas">${plata(rep.ventas)}</span>
-                <span class="ranking-item__meta">${rep.visitas} visitas · ${rep.entregas} u.</span>
+                <span class="ranking-item__ventas">${plata(rep.ventas)}</span> // Se muestra el monto de ventas.
+                <span class="ranking-item__meta">${rep.visitas} visitas · ${rep.entregas} u.</span> // Se muestra el número de visitas y entregas.
             </div>
         `;
-        return item;
+        return item; // Se devuelve el elemento creado.
     }));
 }
 
 function pintarProductos(productos) {
+    // Muestra el producto más y menos vendido.
     document.getElementById('prod-mas-nombre').textContent = productos.mas_vendido.nombre;
     document.getElementById('prod-mas-cantidad').textContent = productos.mas_vendido.cantidad;
     document.getElementById('prod-menos-nombre').textContent = productos.menos_vendido.nombre;
@@ -120,10 +127,12 @@ function pintarProductos(productos) {
 }
 
 function esTemaOscuro() {
+    // Dice si la app está en tema oscuro.
     return window.aquaflashTema?.esTemaOscuro() ?? false;
 }
 
 function coloresGrafico() {
+    // Devuelve los colores del gráfico según el tema.
     const oscuro = esTemaOscuro();
     return {
         texto: oscuro ? '#d1d5db' : '#6b7280',
@@ -134,10 +143,11 @@ function coloresGrafico() {
 }
 
 function pintarGrafico(datos) {
+    // Crea/actualiza el gráfico de ventas y entregas (Chart.js).
     const colores = coloresGrafico();
 
     if (grafico) {
-        grafico.destroy();
+        grafico.destroy(); // Si ya hay un gráfico, se destruye.
     }
 
     grafico = new Chart(canvasGrafico, {
@@ -222,12 +232,14 @@ function pintarGrafico(datos) {
 }
 
 async function get(ruta) {
-    const res = await fetch(`${API}${ruta}`);
+    // GET al API y devuelve JSON.
+    const res = await fetch(`${API}${ruta}`); // Se hace la petición al API.
     if (!res.ok) throw new Error(`Error en ${ruta}`);
-    return res.json();
+    return res.json(); // Se devuelve el JSON de la respuesta.
 }
 
 async function cargarRepartidores() {
+    // Carga el select de filtro por repartidor.
     const repartidores = await get('/repartidor');
     filtroRepartidor.replaceChildren(
         new Option('Todos los repartidores', ''),
@@ -236,13 +248,14 @@ async function cargarRepartidores() {
 }
 
 async function cargarEstadisticas() {
+    // Pide el resumen al API y pinta toda la pantalla.
     mensajeEstado.hidden = false;
     mensajeEstado.textContent = 'Cargando estadísticas...';
 
     const periodo = filtroPeriodo.value;
     const repartidorId = filtroRepartidor.value;
-    const query = new URLSearchParams({ periodo });
-    if (repartidorId) query.set('repartidor_id', repartidorId);
+    const query = new URLSearchParams({ periodo }); // Se crea la query con el periodo.
+    if (repartidorId) query.set('repartidor_id', repartidorId); // Se agrega el id del repartidor a la query si existe.
 
     try {
         const data = await get(`/estadisticas/resumen?${query}`);
@@ -260,6 +273,7 @@ async function cargarEstadisticas() {
 }
 
 function actualizarColoresGrafico() {
+    // Ajusta colores del gráfico al cambiar de tema.
     if (!grafico) return;
     const colores = coloresGrafico();
     grafico.options.plugins.legend.labels.color = colores.texto;
@@ -277,6 +291,7 @@ window.addEventListener('aquaflash-theme-change', actualizarColoresGrafico);
 window.addEventListener('resize', () => grafico?.resize());
 
 async function iniciar() {
+    // Arranca la página de estadísticas.
     try {
         await cargarRepartidores();
         await cargarEstadisticas();
