@@ -9,19 +9,6 @@ const NAVBAR_HTML = `
     <a class="texto-logo" href="index.html">AquaFlash</a>
   </div>
   <div class="nav-utils">
-    <button type="button" class="nav-btn-tema" id="nav-btn-tema" aria-label="Cambiar tema">
-      <span class="nav-btn-tema__sol" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="4"/>
-          <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/>
-        </svg>
-      </span>
-      <span class="nav-btn-tema__luna" aria-hidden="true">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
-        </svg>
-      </span>
-    </button>
     <ul>
     <li>
       <a href="promocion.html" data-nav="promocion">
@@ -126,7 +113,7 @@ function iniciarActualizacionBadge() {
 }
 
 function loadNavbar() {
-    // Inserta el HTML del navbar y activa tema + badge.
+    // Inserta el HTML del navbar y activa el badge de notificaciones.
     const container = document.getElementById('navbar');
     if (!container) return;
 
@@ -140,10 +127,6 @@ function loadNavbar() {
     }
 
     iniciarActualizacionBadge();
-
-    document.getElementById('nav-btn-tema')?.addEventListener('click', () => {
-        window.aquaflashTema?.alternarTema();
-    });
 }
 
 window.actualizarBadgeNavbar = actualizarBadgeNavbar;

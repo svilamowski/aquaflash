@@ -434,38 +434,6 @@
     white-space: nowrap;
 }
 
-html[data-theme="dark"] .filtro-lista-clientes {
-    background: var(--surface-2);
-    border-color: var(--border);
-}
-
-html[data-theme="dark"] .filtro-cliente-item {
-    color: var(--text-secondary);
-}
-
-html[data-theme="dark"] .filtro-cliente-item:hover {
-    background: var(--surface-3);
-}
-
-html[data-theme="dark"] .filtro-cliente-item__nombre {
-    color: var(--text);
-}
-
-html[data-theme="dark"] .filtro-cliente-item__direccion {
-    color: var(--text-muted);
-}
-
-html[data-theme="dark"] .filtro-pill--agregar {
-    background: #1e3a5f;
-    color: #93c5fd;
-    border-color: #3b82f6;
-}
-
-html[data-theme="dark"] .filtro-pill--agregar:hover {
-    background: #2563eb;
-    color: #fff;
-}
-
 .form-nuevo {
     display: flex;
     flex-direction: column;
