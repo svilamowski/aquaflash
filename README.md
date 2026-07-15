@@ -63,3 +63,9 @@ make stop-docker
 *¿Qué hace?* Frena y destruye los contenedores de Docker asociados al proyecto de manera limpia.
 
 **"Variables de Entorno"** es necesario crear un archivo `.env` con las credenciales de Supabase.
+
+<img width="1512" height="857" alt="clientes" src="https://github.com/user-attachments/assets/101d6ab3-4c72-469a-8f17-a8e29b1dddb3" />
+<img width="1512" height="857" alt="cliente" src="https://github.com/user-attachments/assets/57041188-5419-45e8-bc9c-c0bb53bb05a4" />
+<img width="1512" height="857" alt="promocion" src="https://github.com/user-attachments/assets/3cfe89ab-89ca-4434-b2f2-241dfd33a42e" />
+<img width="1512" height="857" alt="stock" src="https://github.com/user-attachments/assets/fece6462-7b28-4fd6-8d3b-3d1706fd6cae" />
+<img width="1512" height="857" alt="notificaciones" src="https://github.com/user-attachments/assets/b1655405-3d25-47ea-a0e6-ae8dca1c0a2b" />
