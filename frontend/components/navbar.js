@@ -24,16 +24,6 @@ const NAVBAR_HTML = `
     </button>
     <ul>
     <li>
-      <a href="estadisticas.html" data-nav="estadisticas">
-        <span class="nav-icon" aria-hidden="true">
-          <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
-            <path d="M4 20V10"/><path d="M10 20V4"/><path d="M16 20v-6"/><path d="M22 20V8"/>
-          </svg>
-        </span>
-        Estadísticas
-      </a>
-    </li>
-    <li>
       <a href="promocion.html" data-nav="promocion">
         <span class="nav-icon" aria-hidden="true">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8">
