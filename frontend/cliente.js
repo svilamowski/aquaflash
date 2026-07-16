@@ -257,10 +257,10 @@ function pintarStockCards(stock) {
         contenedor.innerHTML = '<p class="panel-vacio">Sin productos en casa</p>';
         return;
     }
-    contenedor.innerHTML = stock.map((s) => ` // Se muestran las tarjetas de stock.
+    contenedor.innerHTML = stock.map((s) => `
         <div class="stock-card">
-            <span class="stock-card__nombre">${s.productos?.nombre ?? 'Producto'}</span> // Se muestra el nombre del producto.
-            <span class="stock-card__cantidad">${s.cantidad}</span> // Se muestra la cantidad del producto.
+            <span class="stock-card__nombre">${s.productos?.nombre ?? 'Producto'}</span>
+            <span class="stock-card__cantidad">${s.cantidad}</span>
         </div>
     `).join(''); // Se unen las tarjetas de stock.
 }
