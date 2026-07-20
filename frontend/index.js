@@ -5,6 +5,8 @@ const DIAS = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábados'];
 const tpl = document.getElementById('tpl-cliente');
 const lista = document.getElementById('lista-clientes');
 const mensaje = document.getElementById('mensaje-estado');
+const rutaResumen = document.getElementById('ruta-resumen');
+let pintadoRutaId = 0;
 
 let clientes = [];
 let repartidores = [];
@@ -350,6 +352,63 @@ function clientesVisibles() {
         if (repartidor && String(c.repartidor_id) !== repartidor) return false;
         return true;
     });
+}
+
+function ocultarRutaResumen() {
+    rutaResumen.hidden = true;
+    rutaResumen.innerHTML = '';
+}
+
+function pintarListaPlana(visibles) {
+    ocultarRutaResumen();
+    lista.replaceChildren(...visibles.map(crearTarjeta));
+    mensaje.hidden = visibles.length > 0;
+    if (!visibles.length) {
+        mensaje.textContent = 'No se encontraron clientes con esos filtros.';
+        mensaje.classList.remove('mensaje-estado--error');
+    }
+}
+
+function crearBloqueViaje(viaje, numero) {
+    const bloque = document.createElement('section');
+    bloque.className = 'viaje-bloque';
+
+    const titulo = document.createElement('h2');
+    titulo.className = 'viaje-bloque__titulo';
+    titulo.textContent = `Viaje ${numero}`;
+    bloque.appendChild(titulo);
+
+    const meta = document.createElement('p');
+    meta.className = 'viaje-bloque__meta';
+    meta.textContent =
+        `Carga estimada: ${viaje.cargaUsada} / ${RutaSugerida.CAPACIDAD_CAMION} envases`;
+    bloque.appendChild(meta);
+
+    const listaViaje = document.createElement('div');
+    listaViaje.className = 'viaje-bloque__lista';
+    viaje.clientes.forEach((item, idx) => {
+        const card = crearTarjeta(item.cliente);
+        const orden = document.createElement('span');
+        orden.className = 'tarjeta-cliente__orden-ruta';
+        orden.textContent = `${idx + 1}`;
+        card.querySelector('.tarjeta-cliente__header')?.prepend(orden);
+        const cargaHint = document.createElement('p');
+        cargaHint.className = 'tarjeta-cliente__carga-ruta';
+        cargaHint.textContent = `Carga estimada: ${item.carga} envases`;
+        card.querySelector('.tarjeta-cliente__info')?.appendChild(cargaHint);
+        listaViaje.appendChild(card);
+    });
+    bloque.appendChild(listaViaje);
+
+    if (viaje.capacidadLibre > 0) {
+        const aviso = document.createElement('p');
+        aviso.className = 'viaje-bloque__aviso';
+        aviso.textContent =
+            `Se pueden agregar más clientes a este viaje (quedan ${viaje.capacidadLibre} envases libres).`;
+        bloque.appendChild(aviso);
+    }
+
+    return bloque;
 }
 
 function pintar() {
