@@ -1,8 +1,11 @@
 run-front:
-	cd frontend && npx --yes live-server --port=8080
+	docker compose up frontend
 
 run-back:
-	cd backend && docker compose up -d && npm run dev
+	docker compose up backend
+
+run:
+	docker compose up
 
 stop-docker:
-	cd backend && docker compose down
+	docker compose down
