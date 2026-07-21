@@ -10,3 +10,13 @@ const PENALIZACION_CALLE_DISTINTA = 100000;
 
 // Cache: clave "clienteId-dia" → carga estimada en envases
 const cacheCargas = {};
+
+const DIAS_SEMANA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábados'];
+
+// getDay(): 0=Domingo … 6=Sábado → nuestros nombres (Sábados = 6)
+function nombreDiaDesdeFecha(fecha) {
+  const d = new Date(fecha);
+  const diaJs = d.getDay();
+  if (diaJs === 0) return null;
+  return DIAS_SEMANA[diaJs - 1];
+}
