@@ -204,3 +204,42 @@ function estimarMinutosTotales(viajes) {
     if (m === 0) return h + ' h';
     return h + ' h ' + m + ' min';
 }
+
+function modoRutaActivo(filtroTipo, filtroDia, repartidorValue) {
+  return filtroTipo === 'dia' && !!filtroDia && !!repartidorValue;
+}
+
+// Ordena por proximidad respetando el objeto { cliente, carga }
+function ordenarItemsPorProximidad(items) {
+  const pendientes = items.slice();
+  const ordenados = [];
+  let puntoActual = DIRECCION_FABRICA;
+
+  while (pendientes.length > 0) {
+    let mejorIdx = 0;
+    let mejorDist = distanciaDirecciones(puntoActual, pendientes[0].cliente.direccion);
+    for (let i = 1; i < pendientes.length; i++) {
+      const dist = distanciaDirecciones(puntoActual, pendientes[i].cliente.direccion);
+      if (dist < mejorDist) {
+        mejorDist = dist;
+        mejorIdx = i;
+      }
+    }
+    const elegido = pendientes.splice(mejorIdx, 1)[0];
+    ordenados.push(elegido);
+    puntoActual = elegido.cliente.direccion;
+  }
+
+  return ordenados;
+}
+
+window.RutaSugerida = {
+  DIRECCION_FABRICA: DIRECCION_FABRICA,
+  CAPACIDAD_CAMION: CAPACIDAD_CAMION,
+  modoRutaActivo: modoRutaActivo,
+  adjuntarCargas: adjuntarCargas,
+  ordenarItemsPorProximidad: ordenarItemsPorProximidad,
+  armarViajes: armarViajes,
+  estimarMinutosTotales: estimarMinutosTotales,
+  formatearDuracion: formatearDuracion,
+};
