@@ -38,20 +38,49 @@ function parsearDireccion(direccion) {
 
 // Distancia aproximada sin GPS
 function distanciaDirecciones(dirA, dirB) {
-    const a = parsearDireccion(dirA);
-    const b = parsearDireccion(dirB);
-  
-    if (a.calle && b.calle && a.calle === b.calle) {
-      return Math.abs(a.altura - b.altura);
-    }
-  
-    const maxLen = Math.max(a.calle.length, b.calle.length);
-    let distStr = 0;
-    for (let i = 0; i < maxLen; i++) {
-      const ca = a.calle.charCodeAt(i) || 0;
-      const cb = b.calle.charCodeAt(i) || 0;
-      distStr += Math.abs(ca - cb);
-    }
-  
-    return PENALIZACION_CALLE_DISTINTA + distStr + Math.abs(a.altura - b.altura);
+  const a = parsearDireccion(dirA);
+  const b = parsearDireccion(dirB);
+
+  if (a.calle && b.calle && a.calle === b.calle) {
+    return Math.abs(a.altura - b.altura);
   }
+
+  const maxLen = Math.max(a.calle.length, b.calle.length);
+  let distStr = 0;
+  for (let i = 0; i < maxLen; i++) {
+    const ca = a.calle.charCodeAt(i) || 0;
+    const cb = b.calle.charCodeAt(i) || 0;
+    distStr += Math.abs(ca - cb);
+  }
+
+  return PENALIZACION_CALLE_DISTINTA + distStr + Math.abs(a.altura - b.altura);
+}
+
+function sumaEntregadaVisita(visita) {
+  const productos = visita.productos || [];
+  let total = 0;
+  for (let i = 0; i < productos.length; i++) {
+    total += Number(productos[i].cantidad_entregada) || 0;
+  }
+  return total;
+}
+
+function visitaTieneEntrega(visita) {
+  if (visita.compro) return true;
+  return sumaEntregadaVisita(visita) > 0;
+}
+
+function cargaDesdeStock(cliente) {
+  const stock = cliente.stock || [];
+  let total = 0;
+  for (let i = 0; i < stock.length; i++) {
+    let nombre = '';
+    if (stock[i].productos && stock[i].productos.nombre) {
+      nombre = stock[i].productos.nombre.toLowerCase();
+    }
+    // No contamos dispensers como carga de envases del camión
+    if (nombre.indexOf('dispenser') !== -1) continue;
+    total += Number(stock[i].cantidad) || 0;
+  }
+  return total;
+}
