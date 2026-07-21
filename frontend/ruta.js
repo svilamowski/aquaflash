@@ -142,3 +142,35 @@ async function adjuntarCargas(clientes, diaFiltro, getFn) {
   }
   return resultado;
 }
+
+// Parte la ruta ordenada en viajes según capacidad del camión
+function armarViajes(itemsConCarga) {
+  const viajes = [];
+  let viajeActual = [];
+  let cargaViaje = 0;
+
+  for (let i = 0; i < itemsConCarga.length; i++) {
+    const item = itemsConCarga[i];
+    if (cargaViaje + item.carga > CAPACIDAD_CAMION && viajeActual.length > 0) {
+      viajes.push({
+        clientes: viajeActual.slice(),
+        cargaUsada: cargaViaje,
+        capacidadLibre: CAPACIDAD_CAMION - cargaViaje,
+      });
+      viajeActual = [];
+      cargaViaje = 0;
+    }
+    viajeActual.push(item);
+    cargaViaje += item.carga;
+  }
+
+  if (viajeActual.length > 0) {
+    viajes.push({
+      clientes: viajeActual.slice(),
+      cargaUsada: cargaViaje,
+      capacidadLibre: CAPACIDAD_CAMION - cargaViaje,
+    });
+  }
+
+  return viajes;
+}
