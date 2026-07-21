@@ -174,3 +174,33 @@ function armarViajes(itemsConCarga) {
 
   return viajes;
 }
+
+/*
+ * Tiempo estimado:
+ * - Por cada viaje con n clientes:
+ *   n+1 tramos de traslado (fábrica→primero, entre clientes, último→fábrica)
+ *   + n * atención en domicilio
+ * - Entre viajes (reposición en fábrica): MINUTOS_VUELTA_FABRICA
+ */
+function estimarMinutosTotales(viajes) {
+    let minutos = 0;
+    for (let i = 0; i < viajes.length; i++) {
+      const n = viajes[i].clientes.length;
+      if (n > 0) {
+        minutos += (n + 1) * MINUTOS_ENTRE_PARADAS;
+        minutos += n * MINUTOS_POR_CLIENTE;
+      }
+      if (i < viajes.length - 1) {
+        minutos += MINUTOS_VUELTA_FABRICA;
+      }
+    }
+    return minutos;
+}
+  
+  function formatearDuracion(minutos) {
+    const h = Math.floor(minutos / 60);
+    const m = minutos % 60;
+    if (h <= 0) return m + ' min';
+    if (m === 0) return h + ' h';
+    return h + ' h ' + m + ' min';
+}
