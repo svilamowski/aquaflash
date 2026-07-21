@@ -87,25 +87,58 @@ function cargaDesdeStock(cliente) {
 
 // Última compra del mismo día de la semana
 function estimarCargaDesdeVisitas(visitas, diaFiltro, cliente) {
-    const candidatas = [];
-    for (let i = 0; i < (visitas || []).length; i++) {
-      const v = visitas[i];
-      if (!visitaTieneEntrega(v)) continue;
-      const diaVisita = nombreDiaDesdeFecha(v.fecha);
-      if (diaVisita === diaFiltro) {
-        candidatas.push(v);
-      }
+  const candidatas = [];
+  for (let i = 0; i < (visitas || []).length; i++) {
+    const v = visitas[i];
+    if (!visitaTieneEntrega(v)) continue;
+    const diaVisita = nombreDiaDesdeFecha(v.fecha);
+    if (diaVisita === diaFiltro) {
+      candidatas.push(v);
     }
-  
-    if (candidatas.length > 0) {
-      candidatas.sort(function (a, b) {
-        return new Date(b.fecha) - new Date(a.fecha);
-      });
-      const carga = sumaEntregadaVisita(candidatas[0]);
-      if (carga > 0) return carga;
-    }
-  
-    const desdeStock = cargaDesdeStock(cliente);
-    if (desdeStock > 0) return desdeStock;
-    return CARGA_DEFAULT;
+  }
+
+  if (candidatas.length > 0) {
+    candidatas.sort(function (a, b) {
+      return new Date(b.fecha) - new Date(a.fecha);
+    });
+    const carga = sumaEntregadaVisita(candidatas[0]);
+    if (carga > 0) return carga;
+  }
+
+  const desdeStock = cargaDesdeStock(cliente);
+  if (desdeStock > 0) return desdeStock;
+  return CARGA_DEFAULT;
+}
+
+async function obtenerCargaCliente(cliente, diaFiltro, getFn) {
+  const clave = String(cliente.id) + '-' + diaFiltro;
+  if (cacheCargas[clave] !== undefined) {
+    return cacheCargas[clave];
+  }
+
+  let visitas = [];
+  try {
+    visitas = await getFn('/visita/cliente/' + cliente.id);
+  } catch (err) {
+    visitas = [];
+  }
+  if (!Array.isArray(visitas)) visitas = [];
+
+  let carga = estimarCargaDesdeVisitas(visitas, diaFiltro, cliente);
+  if (carga > CAPACIDAD_CAMION) carga = CAPACIDAD_CAMION;
+  cacheCargas[clave] = carga;
+  return carga;
+}
+
+async function adjuntarCargas(clientes, diaFiltro, getFn) {
+  const resultado = [];
+  for (let i = 0; i < clientes.length; i++) {
+    const c = clientes[i];
+    const carga = await obtenerCargaCliente(c, diaFiltro, getFn);
+    resultado.push({
+      cliente: c,
+      carga: carga,
+    });
+  }
+  return resultado;
 }
