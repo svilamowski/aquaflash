@@ -35,3 +35,23 @@ function parsearDireccion(direccion) {
   const calle = normalizada.replace(/\d+/g, ' ').replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim();
   return { calle: calle, altura: altura, raw: normalizada };
 }
+
+// Distancia aproximada sin GPS
+function distanciaDirecciones(dirA, dirB) {
+    const a = parsearDireccion(dirA);
+    const b = parsearDireccion(dirB);
+  
+    if (a.calle && b.calle && a.calle === b.calle) {
+      return Math.abs(a.altura - b.altura);
+    }
+  
+    const maxLen = Math.max(a.calle.length, b.calle.length);
+    let distStr = 0;
+    for (let i = 0; i < maxLen; i++) {
+      const ca = a.calle.charCodeAt(i) || 0;
+      const cb = b.calle.charCodeAt(i) || 0;
+      distStr += Math.abs(ca - cb);
+    }
+  
+    return PENALIZACION_CALLE_DISTINTA + distStr + Math.abs(a.altura - b.altura);
+  }
