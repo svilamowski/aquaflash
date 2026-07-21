@@ -115,20 +115,18 @@ INSERT INTO public.visitas (id, cliente_id, repartidor_id, compro, monto_pagado,
 INSERT INTO public.ventas_productos (id, visita_id, producto_id, cantidad_entregada, cantidad_retirada, precio_total_producto) VALUES 
 (2, 3, 1, 5, 3, 12500.00);
 
-
--- ==============================================================================
--- 12. AJUSTE DE SECUENCIAS (¡FUNDAMENTAL!)
+-- 12. AJUSTE DE SECUENCIAS
 -- Al insertar IDs manualmente (id=1, id=2), las secuencias automáticas de Postgres 
 -- se desincronizan. Estos comandos arreglan eso para que la app no tire error 
 -- cuando intenten agregar el primer cliente nuevo desde la pantalla.
--- ==============================================================================
-SELECT setval('repartidores_id_seq', (SELECT MAX(id) FROM public.repartidores));
-SELECT setval('productos_id_seq', (SELECT MAX(id) FROM public.productos));
-SELECT setval('stock_fabrica_id_seq', (SELECT MAX(id) FROM public.stock_fabrica));
-SELECT setval('descartados_id_seq', (SELECT MAX(id) FROM public.descartados));
-SELECT setval('filtros_personalizados_id_seq', (SELECT MAX(id) FROM public.filtros_personalizados));
-SELECT setval('clientes_id_seq', (SELECT MAX(id) FROM public.clientes));
-SELECT setval('notas_internas_id_seq', (SELECT MAX(id) FROM public.notas_internas));
-SELECT setval('notificaciones_id_seq', (SELECT MAX(id) FROM public.notificaciones));
-SELECT setval('visitas_id_seq', (SELECT MAX(id) FROM public.visitas));
-SELECT setval('ventas_productos_id_seq', (SELECT MAX(id) FROM public.ventas_productos));
+
+SELECT setval('repartidores_id_seq', COALESCE((SELECT MAX(id) FROM public.repartidores), 1));
+SELECT setval('productos_id_seq', COALESCE((SELECT MAX(id) FROM public.productos), 1));
+SELECT setval('stock_fabrica_id_seq', COALESCE((SELECT MAX(id) FROM public.stock_fabrica), 1));
+SELECT setval('descartados_id_seq', COALESCE((SELECT MAX(id) FROM public.descartados), 1));
+SELECT setval('filtros_personalizados_id_seq', COALESCE((SELECT MAX(id) FROM public.filtros_personalizados), 1));
+SELECT setval('clientes_id_seq', COALESCE((SELECT MAX(id) FROM public.clientes), 1));
+SELECT setval('notas_internas_id_seq', COALESCE((SELECT MAX(id) FROM public.notas_internas), 1));
+SELECT setval('notificaciones_id_seq', COALESCE((SELECT MAX(id) FROM public.notificaciones), 1), false);
+SELECT setval('visitas_id_seq', COALESCE((SELECT MAX(id) FROM public.visitas), 1));
+SELECT setval('ventas_productos_id_seq', COALESCE((SELECT MAX(id) FROM public.ventas_productos), 1));
