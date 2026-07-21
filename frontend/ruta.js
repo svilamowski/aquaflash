@@ -84,3 +84,28 @@ function cargaDesdeStock(cliente) {
   }
   return total;
 }
+
+// Última compra del mismo día de la semana
+function estimarCargaDesdeVisitas(visitas, diaFiltro, cliente) {
+    const candidatas = [];
+    for (let i = 0; i < (visitas || []).length; i++) {
+      const v = visitas[i];
+      if (!visitaTieneEntrega(v)) continue;
+      const diaVisita = nombreDiaDesdeFecha(v.fecha);
+      if (diaVisita === diaFiltro) {
+        candidatas.push(v);
+      }
+    }
+  
+    if (candidatas.length > 0) {
+      candidatas.sort(function (a, b) {
+        return new Date(b.fecha) - new Date(a.fecha);
+      });
+      const carga = sumaEntregadaVisita(candidatas[0]);
+      if (carga > 0) return carga;
+    }
+  
+    const desdeStock = cargaDesdeStock(cliente);
+    if (desdeStock > 0) return desdeStock;
+    return CARGA_DEFAULT;
+}
