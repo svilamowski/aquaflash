@@ -1,106 +1,85 @@
 import pool from '../database/pool.js';
 
 export const getAllClientes = async () => {
-    // SELECT * FROM clientes
-    const { data, error } = await pool.from('clientes').select('*');
-    if (error) throw new Error('Error al obtener clientes: ' + error.message);
-    return data;
+    const { rows } = await pool.query('SELECT * FROM clientes');
+    return rows;
 };
 
 export const getStockEnCasa = async (clienteId) => {
-    // SELECT p.nombre, pc.cantidad FROM productos_clientes pc
-    // INNER JOIN productos p on p.id = pc.producto_id
-    // WHERE pc.cliente_id = $1
-    const { data, error } = await pool
-        .from('productos_clientes')
-        .select('cantidad, producto_id, productos(nombre, precio)')
-        .eq('cliente_id', clienteId);
-        
-    if (error) throw new Error('Error al obtener stock del cliente: ' + error.message);
-    return data;
-
+    const { rows } = await pool.query(
+        `SELECT pc.cantidad, pc.producto_id,
+                json_build_object('nombre', p.nombre, 'precio', p.precio) AS productos
+         FROM productos_clientes pc
+         INNER JOIN productos p ON p.id = pc.producto_id
+         WHERE pc.cliente_id = $1`,
+        [clienteId]
+    );
+    return rows;
 };
 
 export const getClienteById = async (id) => {
-    // SELECT * FROM clientes WHERE id = $1
-    // Usamos .single() porque sabemos que el ID es único y queremos un objeto, no un array
-    const { data, error } = await pool.from('clientes').select('*').eq('id', id).single();
-    if (error) throw new Error('Error al obtener el cliente: ' + error.message);
-    return data;
+    const { rows } = await pool.query('SELECT * FROM clientes WHERE id = $1', [id]);
+    if (!rows[0]) throw new Error('Error al obtener el cliente: Cliente no encontrado');
+    return rows[0];
 };
 
 export const getClientesByNombre = async (clienteNombre) => {
-    // SELECT * FROM clientes
-    // WHERE nombre = $1
-    const { data, error } = await pool.from('clientes').select('*').ilike('nombre', `%${clienteNombre}%`);
-    if (error) throw new Error('Error al buscar clientes: ' + error.message);
-    return data;
+    const { rows } = await pool.query(
+        'SELECT * FROM clientes WHERE nombre ILIKE $1',
+        [`%${clienteNombre}%`]
+    );
+    return rows;
 };
 
 export const getClientesByDireccion = async (clienteDireccion) => {
-    // SELECT * FROM clientes
-    // WHERE direccion = $1
-    const { data, error } = await pool.from('clientes').select('*').ilike('direccion', `%${clienteDireccion}%`);
-    if (error) throw new Error('Error al buscar por dirección: ' + error.message);
-    return data;
+    const { rows } = await pool.query(
+        'SELECT * FROM clientes WHERE direccion ILIKE $1',
+        [`%${clienteDireccion}%`]
+    );
+    return rows;
 };
 
 export const getClientesByFrecuencia = async (frecuencia) => {
-    // SELECT * FROM clientes WHERE frecuencia_visitas = $1
-    const { data, error } = await pool.from('clientes').select('*').eq('frecuencia_visitas', frecuencia);
-    if (error) throw new Error('Error al filtrar por frecuencia: ' + error.message);
-    return data;
+    const { rows } = await pool.query(
+        'SELECT * FROM clientes WHERE frecuencia_visitas = $1',
+        [frecuencia]
+    );
+    return rows;
 };
 
 export const getClientesByRepartidor = async (repartidorId) => {
-    // SELECT * FROM clientes WHERE repartidor_id = $1
-    const { data, error } = await pool.from('clientes').select('*').eq('repartidor_id', repartidorId);
-    if (error) throw new Error('Error al buscar clientes del repartidor: ' + error.message);
-    return data;
+    const { rows } = await pool.query(
+        'SELECT * FROM clientes WHERE repartidor_id = $1',
+        [repartidorId]
+    );
+    return rows;
 };
 
 export const getClientesByDeuda = async () => {
-    // SELECT * FROM clientes
-    // WHERE deuda > 0
-    const { data, error } = await pool.from('clientes').select('*').gt('deuda', 0);
-    if (error) throw new Error('Error al buscar deudores: ' + error.message);
-    return data;
+    const { rows } = await pool.query('SELECT * FROM clientes WHERE deuda > 0');
+    return rows;
 };
 
 export const getClientesByUltimaCompra = async () => {
-    // SELECT *
-    // FROM clientes
-    // WHERE ultima_compra <= CURRENT_DATE - INTERVAL '90 days';
-    const fechaLimite = new Date();
-    fechaLimite.setDate(fechaLimite.getDate() - 90);
-    const fechaSql = fechaLimite.toISOString().split('T')[0]; // Formato YYYY-MM-DD
-
-    const { data, error } = await pool.from('clientes').select('*').lte('ultima_compra', fechaSql);
-    if (error) throw new Error('Error al buscar clientes inactivos: ' + error.message);
-    return data;
+    const { rows } = await pool.query(
+        `SELECT * FROM clientes
+         WHERE ultima_compra <= CURRENT_DATE - INTERVAL '90 days'`
+    );
+    return rows;
 };
 
 export const getClientesEnPromocion = async () => {
-    // SELECT * FROM clientes WHERE es_promocion = true;
-    const { data, error } = await pool
-        .from('clientes')
-        .select('*')
-        .eq('es_promocion', true);
-        
-    if (error) throw new Error('Error al obtener clientes en promoción: ' + error.message);
-    return data;
+    const { rows } = await pool.query('SELECT * FROM clientes WHERE es_promocion = true');
+    return rows;
 };
 
 export const getCantidadProductoCliente = async (clienteId, productoId) => {
-    const { data, error } = await pool
-        .from('productos_clientes')
-        .select('cantidad')
-        .eq('cliente_id', clienteId)
-        .eq('producto_id', productoId)
-        .maybeSingle();
-
-    if (error) throw new Error('Error al consultar stock del cliente: ' + error.message);
-    return data?.cantidad ?? 0;
+    const { rows } = await pool.query(
+        `SELECT cantidad FROM productos_clientes
+         WHERE cliente_id = $1 AND producto_id = $2`,
+        [clienteId, productoId]
+    );
+    return rows[0]?.cantidad ?? 0;
 };
 
 export const asignarProductoCliente = async (clienteId, productoId, cantidad) => {
