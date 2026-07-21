@@ -20,3 +20,18 @@ function nombreDiaDesdeFecha(fecha) {
   if (diaJs === 0) return null;
   return DIAS_SEMANA[diaJs - 1];
 }
+
+function quitarTildes(texto) {
+  return String(texto)
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}
+
+function parsearDireccion(direccion) {
+  const normalizada = quitarTildes(direccion || '');
+  const matchAltura = normalizada.match(/\d+/);
+  const altura = matchAltura ? Number(matchAltura[0]) : 0;
+  const calle = normalizada.replace(/\d+/g, ' ').replace(/[^\w\s]/g, ' ').replace(/\s+/g, ' ').trim();
+  return { calle: calle, altura: altura, raw: normalizada };
+}
