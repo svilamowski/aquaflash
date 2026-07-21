@@ -86,19 +86,19 @@ export const asignarProductoCliente = async (clienteId, productoId, cantidad) =>
     const actual = await getCantidadProductoCliente(clienteId, productoId);
 
     if (actual > 0) {
-        const { error } = await pool
-            .from('productos_clientes')
-            .update({ cantidad: actual + cantidad })
-            .eq('cliente_id', clienteId)
-            .eq('producto_id', productoId);
-        if (error) throw new Error('Error al asignar producto al cliente: ' + error.message);
+        await pool.query(
+            `UPDATE productos_clientes SET cantidad = $1
+             WHERE cliente_id = $2 AND producto_id = $3`,
+            [actual + cantidad, clienteId, productoId]
+        );
         return;
     }
 
-    const { error } = await pool
-        .from('productos_clientes')
-        .insert([{ cliente_id: clienteId, producto_id: productoId, cantidad }]);
-    if (error) throw new Error('Error al asignar producto al cliente: ' + error.message);
+    await pool.query(
+        `INSERT INTO productos_clientes (cliente_id, producto_id, cantidad)
+         VALUES ($1, $2, $3)`,
+        [clienteId, productoId, cantidad]
+    );
 };
 
 export const quitarProductoCliente = async (clienteId, productoId, cantidad = 1) => {
@@ -106,128 +106,87 @@ export const quitarProductoCliente = async (clienteId, productoId, cantidad = 1)
     if (actual <= 0) return;
 
     if (actual <= cantidad) {
-        const { error } = await pool
-            .from('productos_clientes')
-            .delete()
-            .match({ cliente_id: clienteId, producto_id: productoId });
-        if (error) throw new Error('Error al quitar producto del cliente: ' + error.message);
+        await pool.query(
+            `DELETE FROM productos_clientes
+             WHERE cliente_id = $1 AND producto_id = $2`,
+            [clienteId, productoId]
+        );
         return;
     }
 
-    const { error } = await pool
-        .from('productos_clientes')
-        .update({ cantidad: actual - cantidad })
-        .eq('cliente_id', clienteId)
-        .eq('producto_id', productoId);
-    if (error) throw new Error('Error al quitar producto del cliente: ' + error.message);
+    await pool.query(
+        `UPDATE productos_clientes SET cantidad = $1
+         WHERE cliente_id = $2 AND producto_id = $3`,
+        [actual - cantidad, clienteId, productoId]
+    );
 };
 
 export const getNotaInterna = async (clienteId) => {
-    // SELECT nota FROM notas_internas
-    // WHERE cliente_id = $1;
-    const { data, error } = await pool.from('notas_internas').select('nota').eq('cliente_id', clienteId).single();
-    if (error && error.code !== 'PGRST116') throw new Error('Error al obtener nota: ' + error.message);
-    return data;
+    const { rows } = await pool.query(
+        'SELECT nota FROM notas_internas WHERE cliente_id = $1',
+        [clienteId]
+    );
+    return rows[0] ?? null;
 };
 
 export const alterNotaInterna = async (clienteId, clienteNota) => {
-    const { data: existing, error: selectError } = await pool
-        .from('notas_internas')
-        .select('id')
-        .eq('cliente_id', clienteId)
-        .maybeSingle();
+    const existing = await pool.query(
+        'SELECT id FROM notas_internas WHERE cliente_id = $1',
+        [clienteId]
+    );
 
-    if (selectError) throw new Error('Error al modificar nota: ' + selectError.message);
-
-    if (existing) {
-        const { data, error } = await pool
-            .from('notas_internas')
-            .update({ nota: clienteNota })
-            .eq('cliente_id', clienteId)
-            .select();
-        if (error) throw new Error('Error al modificar nota: ' + error.message);
-        return data;
+    if (existing.rows[0]) {
+        const { rows } = await pool.query(
+            `UPDATE notas_internas SET nota = $1
+             WHERE cliente_id = $2
+             RETURNING *`,
+            [clienteNota, clienteId]
+        );
+        return rows;
     }
 
-    const { data, error } = await pool
-        .from('notas_internas')
-        .insert({ cliente_id: clienteId, nota: clienteNota })
-        .select();
-    if (error) throw new Error('Error al modificar nota: ' + error.message);
-    return data;
+    const { rows } = await pool.query(
+        `INSERT INTO notas_internas (cliente_id, nota)
+         VALUES ($1, $2)
+         RETURNING *`,
+        [clienteId, clienteNota]
+    );
+    return rows;
 };
 
 export const alterCliente = async (entity) => {
-    // if (entity.id) {
-    //         let sql = `UPDATE clientes SET `;
-    //         if (entity.nombre) {
-    //             sql += `nombre = '${entity.nombre}' `;
-    //         }
-    //         if (entity.direccion) {
-    //             sql += `direccion = '${entity.direccion}' `;
-    //         }
-    //         if (entity.telefono) {
-    //             sql += `telefono = ${entity.telefono} `;
-    //         }
-    //         if (entity.deuda) {
-    //             sql += `deuda = ${entity.deuda} `;
-    //         }
-    //         if (entity.activo) {
-    //             sql += `activo = ${entity.activo} `;
-    //         }
-    //         if (entity.ultimo_pago) {
-    //             sql += `ultimo_pago = '${entity.ultimo_pago}' `;
-    //         }
-    //         if (entity.ultima_compra) {
-    //             sql += `ultima_compra = '${entity.ultima_compra}' `;
-    //         }
-    //         if (entity.es_promocion) {
-    //             sql += `es_promocion = ${entity.es_promocion} `;
-    //         }
-    //         if (entity.repartidor_id) {
-    //             sql += `repartidor_id = ${entity.repartidor_id} `;
-    //         }
-    //         if (entity.fecha_inicio_promo) {
-    //             sql += `fecha_inicio_promo = ${entity.fecha_inicio_promo} `;
-    //         }
-    //         if (entity.fecha_creacion) {
-    //             sql += `fecha_creacion = ${entity.fecha_creacion} `;
-    //         }
-    //         if (entity.frecuencia_visitas) {
-    //             sql += `frecuencia_visitas = ${entity.frecuencia_visitas} `;
-    //         }
-    //         sql += `WHERE id = ${entity.id}`;
     const { id, ...datosAActualizar } = entity;
-    
-    const { data, error } = await pool
-        .from('clientes')
-        .update(datosAActualizar)
-        .eq('id', id)
-        .select();
-        
-    if (error) throw new Error('Error al actualizar cliente: ' + error.message);
-    return data;
+    const keys = Object.keys(datosAActualizar);
+    if (!keys.length) return [];
+
+    const sets = keys.map((key, index) => `${key} = $${index + 1}`);
+    const values = keys.map((key) => datosAActualizar[key]);
+
+    const { rows } = await pool.query(
+        `UPDATE clientes SET ${sets.join(', ')}
+         WHERE id = $${keys.length + 1}
+         RETURNING *`,
+        [...values, id]
+    );
+    return rows;
 };
 
 export const createCliente = async (clienteData) => {
-    // INSERT INTO clientes (nombre, direccion, telefono, deuda, activo, ultimo_pago, ultima_compra, es_promocion, repartidor_id, fecha_inicio_promo, fecha_creacion, frecuencia_visitas)
-    // VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12)
-    // RETURNING *;
-    
-    const { data, error } = await pool
-        .from('clientes')
-        .insert([clienteData])
-        .select()
-        .single();
-        
-    if (error) throw new Error('Error al crear el cliente: ' + error.message);
-    return data;
+    const columns = Object.keys(clienteData);
+    const values = Object.values(clienteData);
+    const placeholders = columns.map((_, index) => `$${index + 1}`);
+
+    const { rows } = await pool.query(
+        `INSERT INTO clientes (${columns.join(', ')})
+         VALUES (${placeholders.join(', ')})
+         RETURNING *`,
+        values
+    );
+    return rows[0];
 };
 
 export const deleteCliente = async (clienteId) => {
-    // DELETE FROM clientes WHERE id = $1
-    const { error } = await pool.from('clientes').delete().eq('id', clienteId);
-    if (error) throw new Error('Error al eliminar cliente: ' + error.message);
+    await pool.query('DELETE FROM clientes WHERE id = $1', [clienteId]);
     return true;
 }
 
