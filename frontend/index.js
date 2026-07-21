@@ -411,15 +411,65 @@ function crearBloqueViaje(viaje, numero) {
     return bloque;
 }
 
-function pintar() {
-    // Vuelve a dibujar (mostrar) la lista de tarjetas con los clientes visibles.
+async function pintarRutaSugerida(visibles, token) {
+    rutaResumen.hidden = false;
+    rutaResumen.innerHTML = '<p class="ruta-resumen__cargando">Calculando ruta sugerida…</p>';
+    lista.innerHTML = '';
+    mensaje.hidden = true;
+
+    const items = await RutaSugerida.adjuntarCargas(visibles, filtro.dia, get);
+    if (token !== pintadoRutaId) return;
+
+    const ordenados = RutaSugerida.ordenarItemsPorProximidad(items);
+    const viajes = RutaSugerida.armarViajes(ordenados);
+    const minutos = RutaSugerida.estimarMinutosTotales(viajes);
+
+    rutaResumen.innerHTML = `
+        <p class="ruta-resumen__titulo">Ruta sugerida</p>
+        <p class="ruta-resumen__tiempo">
+            Tiempo estimado del reparto: <strong>${RutaSugerida.formatearDuracion(minutos)}</strong>
+        </p>
+        <p class="ruta-resumen__detalle">
+            ${viajes.length} viaje${viajes.length === 1 ? '' : 's'} · ${visibles.length} cliente${visibles.length === 1 ? '' : 's'}
+            · Partiendo de ${RutaSugerida.DIRECCION_FABRICA}
+        </p>
+    `;
+
+    lista.innerHTML = '';
+    viajes.forEach((viaje, i) => {
+        lista.appendChild(crearBloqueViaje(viaje, i + 1));
+    });
+}
+
+async function pintar() {
     const visibles = clientesVisibles();
-    lista.replaceChildren(...visibles.map(crearTarjeta));
-    mensaje.hidden = visibles.length > 0;
+    const repartidor = document.getElementById('filtro-repartidor').value;
+    const enModoRuta = RutaSugerida.modoRutaActivo(filtro.tipo, filtro.dia, repartidor);
+
+    if (!enModoRuta) {
+        pintadoRutaId += 1;
+        pintarListaPlana(visibles);
+        return;
+    }
+
     if (!visibles.length) {
-        // Si no hay clientes visibles, muestra un mensaje de error.
+        pintadoRutaId += 1;
+        ocultarRutaResumen();
+        lista.innerHTML = '';
+        mensaje.hidden = false;
         mensaje.textContent = 'No se encontraron clientes con esos filtros.';
         mensaje.classList.remove('mensaje-estado--error');
+        return;
+    }
+
+    const token = ++pintadoRutaId;
+    try {
+        await pintarRutaSugerida(visibles, token);
+    } catch (error) {
+        if (token !== pintadoRutaId) return;
+        console.error(error);
+        pintarListaPlana(visibles);
+        alert(error.message || 'No se pudo calcular la ruta sugerida');
     }
 }
 
