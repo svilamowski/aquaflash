@@ -21,6 +21,9 @@ cp backend/.env.example backend/.env
 cd backend && npm install && cd ..
 ```
 
+El `.env` de la raíz alimenta `docker-compose.yml` (usuario, password, puertos).  
+El `backend/.env` se usa cuando corrés Node en tu máquina (`DATABASE_HOST=localhost`).
+
 Credenciales locales por defecto (también para pgAdmin):
 
 | Campo | Valor |
@@ -30,6 +33,26 @@ Credenciales locales por defecto (también para pgAdmin):
 | User | `aquaflash` |
 | Password | `aquaflash` |
 | Database | `aquaflash` |
+
+## Base de datos local (PostgreSQL)
+
+La DB vive en Docker Compose (servicio `db`), no en Supabase.
+
+```bash
+make run-db
+```
+
+La primera vez que se crea el volumen, Postgres:
+
+1. Crea la base `aquaflash`
+2. Ejecuta `backend/src/database/schema.sql`
+3. Ejecuta `backend/src/database/seeds.sql`
+
+Si cambiás el schema/seeds y no ves los cambios, recreá el volumen:
+
+```bash
+make reset-db
+```
 
 ## Comandos
 
@@ -53,8 +76,3 @@ make run-front              # terminal 3
 * Frontend: http://localhost:8080  
 * Backend: http://localhost:3000  
 * Test DB: http://localhost:3000/test-db  
-
-Al crear el volumen por primera vez, Postgres ejecuta:
-
-1. `backend/src/database/schema.sql`
-2. `backend/src/database/seeds.sql`
