@@ -119,7 +119,7 @@ Eso borra el volumen y vuelve a cargar schema + seeds.
 docker compose up --build
 ```
 <img width="1512" height="857" alt="Captura de pantalla 2026-07-15 a la(s) 8 20 31 p  m" src="https://github.com/user-attachments/assets/da4bc238-982f-44d3-abe2-727e1700bf7b" />
-<!-- foto 2 -->
+<img width="1512" height="857" alt="Captura de pantalla 2026-07-21 a la(s) 11 24 02 p  m" src="https://github.com/user-attachments/assets/d38a978a-369b-4274-9052-02cf59ea6a7b" />
 <img width="1512" height="857" alt="Captura de pantalla 2026-07-15 a la(s) 8 20 47 p  m" src="https://github.com/user-attachments/assets/5d71a994-a67f-4e53-8cb4-bc2085d28914" />
 <img width="1507" height="857" alt="Captura de pantalla 2026-07-15 a la(s) 8 20 55 p  m" src="https://github.com/user-attachments/assets/956551f7-979d-4236-8e19-40ee372c293a" />
 <img width="1512" height="857" alt="Captura de pantalla 2026-07-15 a la(s) 8 21 02 p  m" src="https://github.com/user-attachments/assets/a5eaa1c2-3fac-438f-b88f-7073f8e061ca" />
