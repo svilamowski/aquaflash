@@ -1,102 +1,81 @@
 import pool from '../database/pool.js';
 
 export const getClientesByFiltro = async (filtroId) => {
-    // SELECT * FROM clientes c
-    // INNER JOIN clientes_filtros cf on cf.cliente_id = c.id
-    // INNER JOIN filtros_personalizados fp on cf.filtro_id = fp.id
-    // WHERE fp.id = $1
-    const { data, error } = await pool
-        .from('clientes_filtros')
-        .select('clientes(*)')
-        .eq('filtro_id', filtroId);
-        
-    if (error) throw new Error('Error al filtrar clientes: ' + error.message);
-    // Supabase devuelve [{ clientes: {id: 1...} }]. Lo mapeamos para que devuelva solo el array de clientes:
-    return data.map(item => item.clientes);
+    const { rows } = await pool.query(
+        `SELECT c.*
+         FROM clientes c
+         INNER JOIN clientes_filtros cf ON cf.cliente_id = c.id
+         WHERE cf.filtro_id = $1`,
+        [filtroId]
+    );
+    return rows;
 };
 
 export const getAllFiltros = async () => {
-    // SELECT *
-    // FROM filtros_personalizados;
-    const { data, error } = await pool.from('filtros_personalizados').select('*');
-    if (error) throw new Error('Error al obtener los filtros: ' + error.message);
-    return data;
+    const { rows } = await pool.query('SELECT * FROM filtros_personalizados');
+    return rows;
 };
 
 export const createFiltro = async (filtroData) => {
-    // INSERT INTO filtros_personalizados (nombre)
-    // VALUES ($1)
-    // RETURNING *;
-    const payload = { nombre: filtroData.nombre };
-    if (filtroData.id) payload.id = filtroData.id;
+    if (filtroData.id) {
+        const { rows } = await pool.query(
+            `INSERT INTO filtros_personalizados (id, nombre)
+             VALUES ($1, $2)
+             RETURNING *`,
+            [filtroData.id, filtroData.nombre]
+        );
+        return rows;
+    }
 
-    const { data, error } = await pool
-        .from('filtros_personalizados')
-        .insert([payload])
-        .select();
-        
-    if (error) throw new Error('Error al crear filtro: ' + error.message);
-    return data;
+    const { rows } = await pool.query(
+        `INSERT INTO filtros_personalizados (nombre)
+         VALUES ($1)
+         RETURNING *`,
+        [filtroData.nombre]
+    );
+    return rows;
 };
 
 export const createFiltroACliente = async (clienteId, filtroId) => {
-    // INSERT INTO clientes_filtros (cliente_id, filtro_id)
-    // VALUES ($1, $2)
-    // RETURNING *;
-    const { data, error } = await pool
-        .from('clientes_filtros')
-        .insert([{ cliente_id: clienteId, filtro_id: filtroId }])
-        .select();
-
-    if (error) {
+    try {
+        const { rows } = await pool.query(
+            `INSERT INTO clientes_filtros (cliente_id, filtro_id)
+             VALUES ($1, $2)
+             RETURNING *`,
+            [clienteId, filtroId]
+        );
+        return rows;
+    } catch (error) {
         if (error.code === '23505') {
             return [{ cliente_id: clienteId, filtro_id: filtroId }];
         }
         throw new Error('Error al asignar filtro al cliente: ' + error.message);
     }
-    return data;
 };
 
 export const deleteFiltroDeCliente = async (clienteId, filtroId) => {
-    // DELETE FROM clientes_filtros
-    // WHERE cliente_id = $1 AND filtro_id = $2;
-    const { error } = await pool
-        .from('clientes_filtros')
-        .delete()
-        .match({ cliente_id: clienteId, filtro_id: filtroId });
-        
-    if (error) throw new Error('Error al remover el filtro: ' + error.message);
+    await pool.query(
+        `DELETE FROM clientes_filtros
+         WHERE cliente_id = $1 AND filtro_id = $2`,
+        [clienteId, filtroId]
+    );
     return true;
 };
 
 export const alterFiltro = async (filtroId, filtroData) => {
-    const { data, error } = await pool
-        .from('filtros_personalizados')
-        .update({ nombre: filtroData.nombre })
-        .eq('id', filtroId)
-        .select()
-        .single();
-
-    if (error) throw new Error('Error al actualizar el filtro: ' + error.message);
-    return data;
+    const { rows } = await pool.query(
+        `UPDATE filtros_personalizados SET nombre = $1
+         WHERE id = $2
+         RETURNING *`,
+        [filtroData.nombre, filtroId]
+    );
+    if (!rows[0]) throw new Error('Error al actualizar el filtro: Filtro no encontrado');
+    return rows[0];
 };
 
 export const deleteFiltro = async (filtroId) => {
-    const { error: errAsignaciones } = await pool
-        .from('clientes_filtros')
-        .delete()
-        .eq('filtro_id', filtroId);
-
-    if (errAsignaciones) {
-        throw new Error('Error al limpiar asignaciones del filtro: ' + errAsignaciones.message);
-    }
-
-    const { error } = await pool
-        .from('filtros_personalizados')
-        .delete()
-        .eq('id', filtroId);
-
-    if (error) throw new Error('Error al eliminar el filtro: ' + error.message);
+    await pool.query('DELETE FROM clientes_filtros WHERE filtro_id = $1', [filtroId]);
+    await pool.query('DELETE FROM filtros_personalizados WHERE id = $1', [filtroId]);
     return true;
 };
 

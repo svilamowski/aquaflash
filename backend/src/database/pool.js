@@ -1,28 +1,23 @@
-import { createClient } from '@supabase/supabase-js';
+import pg from 'pg';
 import dotenv from 'dotenv';
 
 dotenv.config();
 
-let supabaseUrl = process.env.SUPABASE_URL;
-let supabaseKey = process.env.SUPABASE_ANON_KEY;
+const { Pool } = pg;
 
-if (supabaseUrl) {
-    supabaseUrl = supabaseUrl
-        .trim()                 // 1. Borra espacios invisibles y saltos de línea
-        .replace(/['"]/g, '')   // 2. Borra comillas si Docker las metió
-        .replace(/\/$/, '');    // 3. Borra la barra diagonal al final si existe
+const required = ['DATABASE_USER', 'DATABASE_PASSWORD', 'DATABASE_NAME'];
+for (const key of required) {
+    if (!process.env[key]) {
+        throw new Error(`Falta la variable de entorno ${key} en el archivo .env`);
+    }
 }
 
-if (supabaseKey) {
-    supabaseKey = supabaseKey.trim().replace(/['"]/g, '');
-}
+const pool = new Pool({
+    host: process.env.DATABASE_HOST || 'localhost',
+    port: Number(process.env.DATABASE_PORT || 5432),
+    user: process.env.DATABASE_USER,
+    password: process.env.DATABASE_PASSWORD,
+    database: process.env.DATABASE_NAME,
+});
 
-
-if (!supabaseUrl || !supabaseKey) {
-    throw new Error('Faltan las credenciales de Supabase en el archivo .env');
-}
-
-const supabase = createClient(supabaseUrl, supabaseKey);
-
-export { supabase };
-export default supabase;
+export default pool;

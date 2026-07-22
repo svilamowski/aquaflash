@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import { supabase } from "./src/database/pool.js";
+import pool from "./src/database/pool.js";
 import clienteRouter from "./src/controllers/cliente-controller.js";
 import filtroRouter from "./src/controllers/filtro-controller.js";
 import notificacionRouter from "./src/controllers/notificacion-controller.js";
@@ -29,12 +29,11 @@ app.get("/", (req, res) => {
 
 app.get("/test-db", async (req, res) => {
     try {
-        const { data, error } = await supabase.from("repartidores").select("*");
-        if (error) throw error;
-        res.json({ repartidores: data });
+        const { rows } = await pool.query("SELECT * FROM repartidores");
+        res.json({ repartidores: rows });
     } catch (error) {
         console.error("Error en base de datos:", error.message);
-        res.status(500).json({ error: "Hubo un error al conectar con Supabase" });
+        res.status(500).json({ error: "Hubo un error al conectar con PostgreSQL" });
     }
 });
 

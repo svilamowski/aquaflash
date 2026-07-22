@@ -1,71 +1,78 @@
 # AquaFlash
 
-AquaFlash es una aplicación web para la gestión de clientes, repartidores, stock, promociones y estadísticas de una distribuidora de agua, permitiendo un seguimiento eficiente de las asignaciones diarias.
+AquaFlash es una aplicación web para la gestión de clientes, repartidores, stock, promociones y estadísticas de una distribuidora de agua.
 
-## Tecnologías Utilizadas
+## Tecnologías
 
-* **Backend:** Node.js, Express, Supabase.
-* **Frontend:** HTML5, CSS3, JavaScript (Vanilla).
-* **Infraestructura:** Docker, Vercel.
+* **Backend:** Node.js, Express, PostgreSQL (`pg`)
+* **Frontend:** HTML5, CSS3, JavaScript (Vanilla)
+* **Infraestructura:** Docker Compose
 
-## Requisitos previos
+## Requisitos
 
-Para que el proyecto corra perfectamente en tu computadora (sea Mac o Linux), necesitás tener instalado:
+* Docker / Podman con Compose
+* Node.js (si corrés el backend fuera de Docker)
 
-**Docker:** Necesario para levantar la base de datos de Supabase en segundo plano.
-* *Usuarios de macOS:* Deben tener instalada y abierta la aplicación **Docker Desktop**.
-* *Usuarios de Linux:* Tener el daemon de Docker corriendo.
-
-## Instalación Inicial
-
-La primera vez que bajes el repositorio, tenés que instalar las dependencias del backend:
+## Configuración
 
 ```bash
-cd backend
-npm install
-cd ..
-
+cp .env.example .env
+cp backend/.env.example backend/.env
+cd backend && npm install && cd ..
 ```
 
-## Comandos de Desarrollo
+El `.env` de la raíz alimenta `docker-compose.yml` (usuario, password, puertos).  
+El `backend/.env` se usa cuando corrés Node en tu máquina (`DATABASE_HOST=localhost`).
 
-Todo el flujo de trabajo está simplificado mediante el archivo `Makefile`. Podés ejecutar estos comandos desde la carpeta principal del proyecto:
+Credenciales locales por defecto (también para pgAdmin):
 
-### 1. Levantar el Backend y la Base de Datos
+| Campo | Valor |
+|-------|--------|
+| Host | `localhost` |
+| Port | `5432` |
+| User | `aquaflash` |
+| Password | `aquaflash` |
+| Database | `aquaflash` |
+
+## Base de datos local (PostgreSQL)
+
+La DB vive en Docker Compose (servicio `db`), no en Supabase.
 
 ```bash
-make run-back
-
+make run-db
 ```
 
-*¿Qué hace?* Prende los contenedores de Docker en silencio (`-d`) para la base de datos y luego inicia el servidor local de Node.js.
+La primera vez que se crea el volumen, Postgres:
 
-### 2. Levantar el Frontend
+1. Crea la base `aquaflash`
+2. Ejecuta `backend/src/database/schema.sql`
+3. Ejecuta `backend/src/database/seeds.sql`
 
-Abre otra pestaña en tu terminal y ejecutá:
+Si cambiás el schema/seeds y no ves los cambios, recreá el volumen:
 
 ```bash
-make run-front
-
+make reset-db
 ```
 
-*¿Qué hace?* Usa `live-server` para levantar la interfaz web en `http://127.0.0.1:8080` y recarga la página automáticamente cuando guardás cambios en el HTML/JS/CSS.
-
-### 3. Apagar el Entorno
-
-Cuando termines de trabajar, apagá el motor de base de datos para liberar memoria RAM:
+## Comandos
 
 ```bash
-make stop-docker
-
+make run-db       # solo PostgreSQL
+make run-front    # frontend :8080
+make run-back     # backend en Docker
+make run          # todo junto
+make stop-docker  # apagar
+make reset-db     # borrar volumen y recrear schema + seeds
 ```
 
-*¿Qué hace?* Frena y destruye los contenedores de Docker asociados al proyecto de manera limpia.
+### Desarrollo recomendado
 
-**"Variables de Entorno"** es necesario crear un archivo `.env` con las credenciales de Supabase.
+```bash
+make run-db                 # terminal 1
+cd backend && npm run dev   # terminal 2
+make run-front              # terminal 3
+```
 
-<img width="1512" height="857" alt="Captura de pantalla 2026-07-15 a la(s) 8 20 31 p  m" src="https://github.com/user-attachments/assets/da4bc238-982f-44d3-abe2-727e1700bf7b" />
-<img width="1512" height="857" alt="Captura de pantalla 2026-07-15 a la(s) 8 20 47 p  m" src="https://github.com/user-attachments/assets/5d71a994-a67f-4e53-8cb4-bc2085d28914" />
-<img width="1507" height="857" alt="Captura de pantalla 2026-07-15 a la(s) 8 20 55 p  m" src="https://github.com/user-attachments/assets/956551f7-979d-4236-8e19-40ee372c293a" />
-<img width="1512" height="857" alt="Captura de pantalla 2026-07-15 a la(s) 8 21 02 p  m" src="https://github.com/user-attachments/assets/a5eaa1c2-3fac-438f-b88f-7073f8e061ca" />
-<img width="1512" height="857" alt="Captura de pantalla 2026-07-15 a la(s) 8 21 11 p  m" src="https://github.com/user-attachments/assets/b2334538-3625-412e-9eb4-2a43c1824a7c" />
+* Frontend: http://localhost:8080  
+* Backend: http://localhost:3000  
+* Test DB: http://localhost:3000/test-db  
