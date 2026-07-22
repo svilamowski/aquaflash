@@ -1,3 +1,6 @@
+run-db:
+	docker compose up db
+
 run-front:
 	docker compose up frontend
 
@@ -9,3 +12,8 @@ run:
 
 stop-docker:
 	docker compose down
+
+reset-db:
+	docker compose down -v
+	docker compose up db
+
