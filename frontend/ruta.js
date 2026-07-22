@@ -1,8 +1,20 @@
+// ============================================
+// Ruta sugerida: se usa cuando hay filtro de DÍA + REPARTIDOR.
+// Ordena clientes por proximidad, los parte en viajes por capacidad
+// del camión y estima el tiempo total del reparto.
+// ============================================
+
+// Dirección de partida de todos los viajes
 const DIRECCION_FABRICA = 'Av. San Martín 4500, Buenos Aires';
+// Máximo de envases por viaje
 const CAPACIDAD_CAMION = 40;
+// Minutos de atención en cada domicilio
 const MINUTOS_POR_CLIENTE = 12;
+// Minutos de traslado entre paradas (aprox. fija, sin GPS)
 const MINUTOS_ENTRE_PARADAS = 8;
+// Minutos de reposición en fábrica entre un viaje y el siguiente
 const MINUTOS_VUELTA_FABRICA = 25;
+// Carga que asumimos si no hay historial ni stock
 const CARGA_DEFAULT = 2;
 
 // Penalización cuando dos direcciones no están en la misma calle
@@ -17,10 +29,12 @@ const DIAS_SEMANA = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sáb
 function nombreDiaDesdeFecha(fecha) {
   const d = new Date(fecha);
   const diaJs = d.getDay();
+  // Los domingos no se usan en el sistema
   if (diaJs === 0) return null;
   return DIAS_SEMANA[diaJs - 1];
 }
 
+// Pasa a minúsculas y saca tildes para comparar calles
 function quitarTildes(texto) {
   return String(texto)
     .toLowerCase()
@@ -28,6 +42,7 @@ function quitarTildes(texto) {
     .replace(/[\u0300-\u036f]/g, '');
 }
 
+// Separa la dirección en calle (texto) y altura (primer número)
 function parsearDireccion(direccion) {
   const normalizada = quitarTildes(direccion || '');
   const matchAltura = normalizada.match(/\d+/);
@@ -37,6 +52,7 @@ function parsearDireccion(direccion) {
 }
 
 // Distancia aproximada sin GPS
+// Misma calle → diferencia de alturas; calles distintas → penalización + diff de nombre
 function distanciaDirecciones(dirA, dirB) {
   const a = parsearDireccion(dirA);
   const b = parsearDireccion(dirB);
@@ -45,6 +61,7 @@ function distanciaDirecciones(dirA, dirB) {
     return Math.abs(a.altura - b.altura);
   }
 
+  // Compara letra a letra los nombres de calle
   const maxLen = Math.max(a.calle.length, b.calle.length);
   let distStr = 0;
   for (let i = 0; i < maxLen; i++) {
@@ -56,6 +73,7 @@ function distanciaDirecciones(dirA, dirB) {
   return PENALIZACION_CALLE_DISTINTA + distStr + Math.abs(a.altura - b.altura);
 }
 
+// Suma las cantidades entregadas en una visita
 function sumaEntregadaVisita(visita) {
   const productos = visita.productos || [];
   let total = 0;
@@ -65,11 +83,13 @@ function sumaEntregadaVisita(visita) {
   return total;
 }
 
+// Indica si la visita cuenta como compra/entrega
 function visitaTieneEntrega(visita) {
   if (visita.compro) return true;
   return sumaEntregadaVisita(visita) > 0;
 }
 
+// Fallback: suma stock en casa (sin dispensers)
 function cargaDesdeStock(cliente) {
   const stock = cliente.stock || [];
   let total = 0;
@@ -86,6 +106,7 @@ function cargaDesdeStock(cliente) {
 }
 
 // Última compra del mismo día de la semana
+// Orden: 1) visita de ese día  2) stock en casa  3) CARGA_DEFAULT
 function estimarCargaDesdeVisitas(visitas, diaFiltro, cliente) {
   const candidatas = [];
   for (let i = 0; i < (visitas || []).length; i++) {
@@ -98,6 +119,7 @@ function estimarCargaDesdeVisitas(visitas, diaFiltro, cliente) {
   }
 
   if (candidatas.length > 0) {
+    // Más reciente primero
     candidatas.sort(function (a, b) {
       return new Date(b.fecha) - new Date(a.fecha);
     });
@@ -110,6 +132,7 @@ function estimarCargaDesdeVisitas(visitas, diaFiltro, cliente) {
   return CARGA_DEFAULT;
 }
 
+// Pide historial al API (o usa cache) y devuelve la carga estimada
 async function obtenerCargaCliente(cliente, diaFiltro, getFn) {
   const clave = String(cliente.id) + '-' + diaFiltro;
   if (cacheCargas[clave] !== undefined) {
@@ -125,11 +148,13 @@ async function obtenerCargaCliente(cliente, diaFiltro, getFn) {
   if (!Array.isArray(visitas)) visitas = [];
 
   let carga = estimarCargaDesdeVisitas(visitas, diaFiltro, cliente);
+  // Un cliente no puede superar la capacidad del camión
   if (carga > CAPACIDAD_CAMION) carga = CAPACIDAD_CAMION;
   cacheCargas[clave] = carga;
   return carga;
 }
 
+// Arma la lista { cliente, carga } para todos los visibles
 async function adjuntarCargas(clientes, diaFiltro, getFn) {
   const resultado = [];
   for (let i = 0; i < clientes.length; i++) {
@@ -151,6 +176,7 @@ function armarViajes(itemsConCarga) {
 
   for (let i = 0; i < itemsConCarga.length; i++) {
     const item = itemsConCarga[i];
+    // Si el próximo no entra, cerramos el viaje (vuelve a fábrica) y empezamos otro
     if (cargaViaje + item.carga > CAPACIDAD_CAMION && viajeActual.length > 0) {
       viajes.push({
         clientes: viajeActual.slice(),
@@ -164,6 +190,7 @@ function armarViajes(itemsConCarga) {
     cargaViaje += item.carga;
   }
 
+  // Último viaje
   if (viajeActual.length > 0) {
     viajes.push({
       clientes: viajeActual.slice(),
@@ -190,6 +217,7 @@ function estimarMinutosTotales(viajes) {
         minutos += (n + 1) * MINUTOS_ENTRE_PARADAS;
         minutos += n * MINUTOS_POR_CLIENTE;
       }
+      // Reposición solo si hay otro viaje después
       if (i < viajes.length - 1) {
         minutos += MINUTOS_VUELTA_FABRICA;
       }
@@ -197,6 +225,7 @@ function estimarMinutosTotales(viajes) {
     return minutos;
 }
   
+  // Pasa minutos a texto: "3 h 20 min", "45 min", "2 h"
   function formatearDuracion(minutos) {
     const h = Math.floor(minutos / 60);
     const m = minutos % 60;
@@ -205,11 +234,13 @@ function estimarMinutosTotales(viajes) {
     return h + ' h ' + m + ' min';
 }
 
+// Solo se activa con día de la semana + repartidor elegidos
 function modoRutaActivo(filtroTipo, filtroDia, repartidorValue) {
   return filtroTipo === 'dia' && !!filtroDia && !!repartidorValue;
 }
 
 // Ordena por proximidad respetando el objeto { cliente, carga }
+// Nearest-neighbor: arranca en la fábrica y siempre elige el más cercano pendiente
 function ordenarItemsPorProximidad(items) {
   const pendientes = items.slice();
   const ordenados = [];
@@ -225,6 +256,7 @@ function ordenarItemsPorProximidad(items) {
         mejorIdx = i;
       }
     }
+    // Sacamos al elegido y el próximo salto parte desde su dirección
     const elegido = pendientes.splice(mejorIdx, 1)[0];
     ordenados.push(elegido);
     puntoActual = elegido.cliente.direccion;
@@ -233,6 +265,7 @@ function ordenarItemsPorProximidad(items) {
   return ordenados;
 }
 
+// Lo que index.js usa a través de window.RutaSugerida
 window.RutaSugerida = {
   DIRECCION_FABRICA: DIRECCION_FABRICA,
   CAPACIDAD_CAMION: CAPACIDAD_CAMION,

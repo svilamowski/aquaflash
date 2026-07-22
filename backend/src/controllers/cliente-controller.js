@@ -5,10 +5,10 @@ const router = Router();
 const svc = new ClienteService();
 let returnArray;
 
-// Obtener todos los clientes
+// Obtener clientes (sin promociones) — usado por el index
 router.get('/', async (req, res) => {
     try {
-        returnArray = await svc.getAllClientes();
+        returnArray = await svc.getAllClientesSinPromocion();
         res.status(200).send(returnArray);
     } catch (error) {
         res.status(500).json({ message: 'Error al obtener clientes', error: error.message });

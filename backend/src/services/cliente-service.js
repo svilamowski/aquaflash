@@ -38,6 +38,11 @@ export default class ClienteService {
         return returnArray;
     }
 
+    getAllClientesSinPromocion = async () => {
+        const returnArray = await this.clienteRepo.getAllClientesSinPromocion();
+        return returnArray;
+    }
+
     getStockEnCasa = async (clienteId) => {
         if (!clienteId) throw new Error('El ID del cliente es obligatorio');
         const stock = await this.clienteRepo.getStockEnCasa(clienteId);
@@ -114,7 +119,7 @@ export default class ClienteService {
     }
 
     getClientesByNombre = async (nombre) => {
-        if (!nombre) return await this.getAllClientes();
+        if (!nombre) return await this.getAllClientesSinPromocion();
         const returnArray = await this.clienteRepo.getClientesByNombre(nombre);
         return returnArray;
     }

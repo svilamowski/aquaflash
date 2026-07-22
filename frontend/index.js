@@ -6,6 +6,7 @@ const tpl = document.getElementById('tpl-cliente');
 const lista = document.getElementById('lista-clientes');
 const mensaje = document.getElementById('mensaje-estado');
 const rutaResumen = document.getElementById('ruta-resumen');
+// Token para ignorar respuestas viejas si el usuario cambia filtros mientras carga
 let pintadoRutaId = 0;
 
 let clientes = [];
@@ -341,6 +342,7 @@ function clientesVisibles() {
     const repartidor = document.getElementById('filtro-repartidor').value;
 
     return clientes.filter((c) => {
+        if (c.es_promocion) return false;
         if (filtro.tipo === 'personalizado' && filtro.personalizadoId) {
             const ids = asignaciones[filtro.personalizadoId];
             if (!ids?.has(c.id)) return false;
@@ -354,12 +356,18 @@ function clientesVisibles() {
     });
 }
 
+// --- Ruta sugerida (día + repartidor) ---
+// La lógica de cálculo está en ruta.js (window.RutaSugerida).
+// Acá solo decidimos cuándo activarla y cómo dibujarla.
+
 function ocultarRutaResumen() {
+    // Saca el banner de tiempo estimado cuando no hay modo ruta
     rutaResumen.hidden = true;
     rutaResumen.innerHTML = '';
 }
 
 function pintarListaPlana(visibles) {
+    // Listado normal de cards (sin viajes ni banner de ruta)
     ocultarRutaResumen();
     lista.replaceChildren(...visibles.map(crearTarjeta));
     mensaje.hidden = visibles.length > 0;
@@ -370,6 +378,7 @@ function pintarListaPlana(visibles) {
 }
 
 function crearBloqueViaje(viaje, numero) {
+    // Arma un bloque "Viaje N" con sus cards ordenadas y el aviso de capacidad libre
     const bloque = document.createElement('section');
     bloque.className = 'viaje-bloque';
 
@@ -378,6 +387,7 @@ function crearBloqueViaje(viaje, numero) {
     titulo.textContent = `Viaje ${numero}`;
     bloque.appendChild(titulo);
 
+    // Cuántos envases usa este viaje vs capacidad del camión
     const meta = document.createElement('p');
     meta.className = 'viaje-bloque__meta';
     meta.textContent =
@@ -388,10 +398,12 @@ function crearBloqueViaje(viaje, numero) {
     listaViaje.className = 'viaje-bloque__lista';
     viaje.clientes.forEach((item, idx) => {
         const card = crearTarjeta(item.cliente);
+        // Numerito de orden dentro del viaje (1, 2, 3…)
         const orden = document.createElement('span');
         orden.className = 'tarjeta-cliente__orden-ruta';
         orden.textContent = `${idx + 1}`;
         card.querySelector('.tarjeta-cliente__header')?.prepend(orden);
+        // Carga estimada de ese cliente (para entender por qué entró en este viaje)
         const cargaHint = document.createElement('p');
         cargaHint.className = 'tarjeta-cliente__carga-ruta';
         cargaHint.textContent = `Carga estimada: ${item.carga} envases`;
@@ -400,6 +412,7 @@ function crearBloqueViaje(viaje, numero) {
     });
     bloque.appendChild(listaViaje);
 
+    // Si sobra espacio en el camión, avisamos debajo del viaje
     if (viaje.capacidadLibre > 0) {
         const aviso = document.createElement('p');
         aviso.className = 'viaje-bloque__aviso';
@@ -412,18 +425,26 @@ function crearBloqueViaje(viaje, numero) {
 }
 
 async function pintarRutaSugerida(visibles, token) {
+    // 1) Muestra "calculando…"
+    // 2) Pide cargas (historial de visitas)
+    // 3) Ordena por proximidad desde la fábrica
+    // 4) Parte en viajes por capacidad
+    // 5) Calcula tiempo y pinta banner + bloques
     rutaResumen.hidden = false;
     rutaResumen.innerHTML = '<p class="ruta-resumen__cargando">Calculando ruta sugerida…</p>';
     lista.innerHTML = '';
     mensaje.hidden = true;
 
+    // Carga estimada por cliente según última compra de ese día
     const items = await RutaSugerida.adjuntarCargas(visibles, filtro.dia, get);
+    // Si el usuario cambió filtros mientras esperábamos, descartamos este resultado
     if (token !== pintadoRutaId) return;
 
     const ordenados = RutaSugerida.ordenarItemsPorProximidad(items);
     const viajes = RutaSugerida.armarViajes(ordenados);
     const minutos = RutaSugerida.estimarMinutosTotales(viajes);
 
+    // Banner arriba de todo con el tiempo total del día
     rutaResumen.innerHTML = `
         <p class="ruta-resumen__titulo">Ruta sugerida</p>
         <p class="ruta-resumen__tiempo">
@@ -442,11 +463,14 @@ async function pintarRutaSugerida(visibles, token) {
 }
 
 async function pintar() {
+    // Punto de entrada: lista normal O ruta sugerida
     const visibles = clientesVisibles();
     const repartidor = document.getElementById('filtro-repartidor').value;
+    // Solo con día de la semana + repartidor elegidos
     const enModoRuta = RutaSugerida.modoRutaActivo(filtro.tipo, filtro.dia, repartidor);
 
     if (!enModoRuta) {
+        // Invalidamos cualquier cálculo de ruta en curso
         pintadoRutaId += 1;
         pintarListaPlana(visibles);
         return;
@@ -462,6 +486,7 @@ async function pintar() {
         return;
     }
 
+    // Token de esta pintura: si cambia el filtro, el token viejo se ignora
     const token = ++pintadoRutaId;
     try {
         await pintarRutaSugerida(visibles, token);
@@ -736,10 +761,14 @@ async function iniciar() {
     try {
         [repartidores, clientes, filtrosPersonalizados] = await Promise.all([
             get('/repartidor'),
-            get('/cliente').then((datos) => Promise.all(datos.map(async (c) => ({
-                ...c,
-                stock: await get(`/cliente/${c.id}/stock`).catch(() => []),
-            })))),
+            get('/cliente').then((datos) => Promise.all(
+                (datos ?? [])
+                    .filter((c) => !c.es_promocion)
+                    .map(async (c) => ({
+                        ...c,
+                        stock: await get(`/cliente/${c.id}/stock`).catch(() => []),
+                    }))
+            )),
             get('/filtro').catch(() => []),
         ]);
 

@@ -5,6 +5,11 @@ export const getAllClientes = async () => {
     return rows;
 };
 
+export const getAllClientesSinPromocion = async () => {
+    const { rows } = await pool.query('SELECT * FROM clientes WHERE es_promocion = false');
+    return rows;
+};
+
 export const getStockEnCasa = async (clienteId) => {
     const { rows } = await pool.query(
         `SELECT pc.cantidad, pc.producto_id,
@@ -192,6 +197,7 @@ export const deleteCliente = async (clienteId) => {
 
 export default class ClienteRepository {
     getAllClientes = getAllClientes;
+    getAllClientesSinPromocion = getAllClientesSinPromocion;
     getStockEnCasa = getStockEnCasa;
     getCantidadProductoCliente = getCantidadProductoCliente;
     asignarProductoCliente = asignarProductoCliente;
