@@ -1,49 +1,83 @@
 import pool from '../database/pool.js';
 
 export const createVisita = async (visitaData) => {
-    // INSERT INTO visitas (cliente_id, repartidor_id, compro, monto_pagado, monto_total_venta, fecha) 
-    // VALUES ($1, $2, $3, $4, $5, CURRENT_TIMESTAMP) 
-    // RETURNING *;
-    const { data, error } = await pool.from('visitas').insert([visitaData]).select().single();
-    if (error) throw new Error('Error al registrar visita: ' + error.message);
-    return data;
+    const {
+        cliente_id,
+        repartidor_id,
+        compro,
+        monto_pagado,
+        monto_total_venta,
+        fecha,
+    } = visitaData;
+
+    const { rows } = await pool.query(
+        `INSERT INTO visitas (cliente_id, repartidor_id, compro, monto_pagado, monto_total_venta, fecha)
+         VALUES ($1, $2, $3, $4, $5, COALESCE($6::timestamptz, CURRENT_TIMESTAMP))
+         RETURNING *`,
+        [cliente_id, repartidor_id, compro, monto_pagado, monto_total_venta, fecha ?? null]
+    );
+    return rows[0];
 };
 
 export const createVentasProductos = async (ventasArray) => {
-    // INSERT INTO ventas_productos (visita_id, producto_id, cantidad_entregada, cantidad_retirada, precio_total_producto) 
-    // VALUES 
-    //     ($1, $2, $3, $4, $5),
-    //      ...
-    // RETURNING *;
-    const { data, error } = await pool.from('ventas_productos').insert(ventasArray).select();
-    if (error) throw new Error('Error al guardar detalles de productos: ' + error.message);
-    return data;
+    const results = [];
+    for (const venta of ventasArray) {
+        const { rows } = await pool.query(
+            `INSERT INTO ventas_productos
+                (visita_id, producto_id, cantidad_entregada, cantidad_retirada, precio_total_producto)
+             VALUES ($1, $2, $3, $4, $5)
+             RETURNING *`,
+            [
+                venta.visita_id,
+                venta.producto_id,
+                venta.cantidad_entregada,
+                venta.cantidad_retirada,
+                venta.precio_total_producto,
+            ]
+        );
+        results.push(rows[0]);
+    }
+    return results;
 };
 
 export const getVisitasByCliente = async (clienteId) => {
-    const { data, error } = await pool
-        .from('visitas')
-        .select('*, ventas_productos(cantidad_entregada, cantidad_retirada, precio_total_producto, productos(nombre))')
-        .eq('cliente_id', clienteId)
-        .order('fecha', { ascending: false });
-
-    if (error) throw new Error('Error al obtener historial de visitas: ' + error.message);
-    return data;
+    const { rows } = await pool.query(
+        `SELECT v.*,
+                COALESCE(
+                    json_agg(
+                        json_build_object(
+                            'cantidad_entregada', vp.cantidad_entregada,
+                            'cantidad_retirada', vp.cantidad_retirada,
+                            'precio_total_producto', vp.precio_total_producto,
+                            'productos', json_build_object('nombre', p.nombre)
+                        )
+                    ) FILTER (WHERE vp.id IS NOT NULL),
+                    '[]'
+                ) AS ventas_productos
+         FROM visitas v
+         LEFT JOIN ventas_productos vp ON vp.visita_id = v.id
+         LEFT JOIN productos p ON p.id = vp.producto_id
+         WHERE v.cliente_id = $1
+         GROUP BY v.id
+         ORDER BY v.fecha DESC`,
+        [clienteId]
+    );
+    return rows;
 };
 
 export const getVisitasDeHoyByRepartidor = async (repartidorId) => {
-    // SELECT * FROM visitas WHERE repartidor_id = $1 AND fecha = HOY
     const hoy = new Date().toISOString().split('T')[0];
     
-    const { data, error } = await pool
-        .from('visitas')
-        .select('*, clientes(nombre)')
-        .eq('repartidor_id', repartidorId)
-        .gte('fecha', `${hoy}T00:00:00`)
-        .lte('fecha', `${hoy}T23:59:59`);
-        
-    if (error) throw new Error('Error al obtener visitas de hoy: ' + error.message);
-    return data;
+    const { rows } = await pool.query(
+        `SELECT v.*, json_build_object('nombre', c.nombre) AS clientes
+         FROM visitas v
+         INNER JOIN clientes c ON c.id = v.cliente_id
+         WHERE v.repartidor_id = $1
+           AND v.fecha >= $2::timestamptz
+           AND v.fecha <= ($2::date + INTERVAL '1 day' - INTERVAL '1 second')`,
+        [repartidorId, `${hoy}T00:00:00`]
+    );
+    return rows;
 };
 
 export default class VisitaRepository {
