@@ -1,64 +1,57 @@
 import pool from '../database/pool.js';
 
 export const getStockEnCasas = async () => {
-    const { data, error } = await pool
-        .from('productos_clientes')
-        .select('producto_id, cantidad');
-
-    if (error) throw new Error('Error al leer stock en casas: ' + error.message);
+    const { rows } = await pool.query(
+        'SELECT producto_id, cantidad FROM productos_clientes'
+    );
 
     const totales = {};
-    data.forEach((row) => {
+    rows.forEach((row) => {
         totales[row.producto_id] = (totales[row.producto_id] ?? 0) + row.cantidad;
     });
     return totales;
 };
 
 export const getStockFabrica = async () => {
-    // SELECT sf.*, p.nombre 
-    // FROM stock_fabrica sf
-    // INNER JOIN productos p ON sf.producto_id = p.id;
-    const { data, error } = await pool.from('stock_fabrica').select('*, productos(nombre)');
-    if (error) throw new Error('Error al leer el stock de fábrica: ' + error.message);
-    return data;
+    const { rows } = await pool.query(
+        `SELECT sf.*, json_build_object('nombre', p.nombre) AS productos
+         FROM stock_fabrica sf
+         INNER JOIN productos p ON sf.producto_id = p.id`
+    );
+    return rows;
 };
 
 export const updateStockCantidad = async (productoId, nuevaCantidad) => {
-    // UPDATE stock_fabrica SET cantidad = $1 WHERE producto_id = $2
-    const { data, error } = await pool
-        .from('stock_fabrica')
-        .update({ cantidad: nuevaCantidad })
-        .eq('producto_id', productoId)
-        .select();
-        
-    if (error) throw new Error('Error al actualizar stock: ' + error.message);
-    return data;
+    const { rows } = await pool.query(
+        `UPDATE stock_fabrica SET cantidad = $1
+         WHERE producto_id = $2
+         RETURNING *`,
+        [nuevaCantidad, productoId]
+    );
+    return rows;
 };
 
 export const createStockFabrica = async (productoId, cantidad) => {
-    const { data, error } = await pool
-        .from('stock_fabrica')
-        .insert([{ producto_id: productoId, cantidad }])
-        .select()
-        .single();
-
-    if (error) throw new Error('Error al crear stock de fábrica: ' + error.message);
-    return data;
+    const { rows } = await pool.query(
+        `INSERT INTO stock_fabrica (producto_id, cantidad)
+         VALUES ($1, $2)
+         RETURNING *`,
+        [productoId, cantidad]
+    );
+    return rows[0];
 };
 
 export const ajustarStockPorVenta = async (productoId, cantidadEntregada, cantidadRetirada) => {
     const entregada = cantidadEntregada ?? 0;
     const retirada = cantidadRetirada ?? 0;
 
-    const { data: stock, error: selectError } = await pool
-        .from('stock_fabrica')
-        .select('cantidad')
-        .eq('producto_id', productoId)
-        .single();
+    const { rows } = await pool.query(
+        'SELECT cantidad FROM stock_fabrica WHERE producto_id = $1',
+        [productoId]
+    );
+    if (!rows[0]) throw new Error('Error al obtener stock: Stock no encontrado');
 
-    if (selectError) throw new Error('Error al obtener stock: ' + selectError.message);
-
-    const nuevaCantidad = stock.cantidad - entregada + retirada;
+    const nuevaCantidad = rows[0].cantidad - entregada + retirada;
     if (nuevaCantidad < 0) {
         throw new Error('No hay stock suficiente en fábrica para realizar la entrega');
     }
@@ -67,15 +60,13 @@ export const ajustarStockPorVenta = async (productoId, cantidadEntregada, cantid
 };
 
 export const descartarStock = async (productoId, cantidadADescartar) => {
-    const { data: stock, error: selectError } = await pool
-        .from('stock_fabrica')
-        .select('cantidad')
-        .eq('producto_id', productoId)
-        .single();
+    const { rows } = await pool.query(
+        'SELECT cantidad FROM stock_fabrica WHERE producto_id = $1',
+        [productoId]
+    );
+    if (!rows[0]) throw new Error('Error al obtener stock: ' + selectError.message);
 
-    if (selectError) throw new Error('Error al obtener stock: ' + selectError.message);
-
-    const nuevaCantidad = stock.cantidad - cantidadADescartar;
+    const nuevaCantidad = rows[0].cantidad - cantidadADescartar;
     if (nuevaCantidad < 0) {
         throw new Error('No hay stock suficiente para descartar esa cantidad');
     }
